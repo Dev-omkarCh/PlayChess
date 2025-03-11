@@ -1,14 +1,23 @@
-export const isValidMove = (piece, fromRow, fromCol, toRow, toCol, board) => {
+
+export const isValidMove = (piece, fromRow, fromCol, toRow, toCol, board, castlingRights, isSuggested) => {
     if (!piece) return false;
     const { type, color } = piece;
     const targetSquare = board[toRow][toCol];
+
+    const newBoard = board.map((r) => [...r]);
+    newBoard[toRow][toCol] = piece;
+    newBoard[fromRow][fromCol] = "";
+
+    if (isKingInCheck(newBoard, piece.color)) {
+      return false; // This move keeps the king in check
+    }
   
     // Prevent moving onto a piece of the same color
     if (targetSquare && targetSquare.color === color) return false;
   
     switch (type) {
       case "pawn":
-        return validatePawnMove(fromRow, fromCol, toRow, toCol, board, color);
+        return validatePawnMove(fromRow, fromCol, toRow, toCol, board, color,isSuggested);
       case "rook":
         return validateRookMove(fromRow, fromCol, toRow, toCol, board);
       case "knight":
@@ -18,15 +27,16 @@ export const isValidMove = (piece, fromRow, fromCol, toRow, toCol, board) => {
       case "queen":
         return validateQueenMove(fromRow, fromCol, toRow, toCol, board);
       case "king":
-        return validateKingMove(fromRow, fromCol, toRow, toCol, board);
+        return validateKingMove(fromRow, fromCol, toRow, toCol, board, castlingRights,isSuggested);
       default:
         return false;
     }
   };
   
   // **Pawn Move Logic**
-  const validatePawnMove = (fromRow, fromCol, toRow, toCol, board, color) => {
-    const direction = color === "white" ? -1 : 1;
+  const validatePawnMove = (fromRow, fromCol, toRow, toCol, board, color,isSuggested) => {
+    const piece = board[fromRow][fromCol];
+    const direction = piece.color === "white" ? -1 : 1;
     const startRow = color === "white" ? 6 : 1;
   
     // Normal Move (1 step forward)
@@ -43,6 +53,9 @@ export const isValidMove = (piece, fromRow, fromCol, toRow, toCol, board) => {
     if (toRow === fromRow + direction && Math.abs(toCol - fromCol) === 1 && board[toRow][toCol]) {
       return true;
     }
+
+    // pawn promotion detection
+    
   
     return false;
   };
@@ -72,8 +85,63 @@ export const isValidMove = (piece, fromRow, fromCol, toRow, toCol, board) => {
   };
   
   // **King Move Logic**
-  const validateKingMove = (fromRow, fromCol, toRow, toCol) => {
-    return Math.abs(fromRow - toRow) <= 1 && Math.abs(fromCol - toCol) <= 1;
+  const validateKingMove = (fromRow, fromCol, toRow, toCol,board, castlingRights, isSuggested = false) => {
+    const rowDiff = Math.abs(fromRow - toRow);
+    const colDiff = Math.abs(fromCol - toCol);
+
+    // Normal King Move (One Step in Any Direction)
+    if (rowDiff <= 1 && colDiff <= 1) {
+      return true;
+    }
+
+    // Castling Move (King Moves Two Squares Horizontally)
+    if (rowDiff === 0 && colDiff === 2) {
+      if (fromRow === 7 && fromCol === 4) { // 8th Rank
+        // White Castling
+        if (toCol === 6 && castlingRights?.whiteRookRight) {
+          if (board[7][5] === null && board[7][6] === null) {
+            if(!isSuggested){
+              board[7][5] = board[7][7]; // Move Rook for King Side
+              board[7][7] = null;
+            }
+            return true;
+          }
+        }
+        if (toCol === 2 && castlingRights?.whiteRookLeft) {
+          if(board[7][1] === null && board[7][2] === null && board[7][3] === null){
+            if(!isSuggested){
+              board[7][3] = board[7][0]; // Move Rook for Queen Side
+              board[7][0] = null;
+            }
+            return true;
+          }
+        }
+      }
+
+      if (fromRow === 0 && fromCol === 4) { // 1st Rank
+        // Black Castling
+        if (toCol === 6 && castlingRights?.blackRookRight) {
+          if (board[0][5] === null && board[0][6] === null) {
+            if(!isSuggested){
+              board[0][5] = board[0][7];
+              board[0][7] = null;
+            }
+            return true;
+          }
+        }
+        if (toCol === 2 && castlingRights?.blackRookLeft) {
+          if (board[0][1] === null && board[0][2] === null && board[0][3] === null) {
+            if(!isSuggested){
+              board[0][3] = board[0][0];
+              board[0][0] = null;
+            }
+            return true;
+          }
+        }
+      }
+    }
+
+  return false; // Invalid Move
   };
   
   // **Path Clearance Check**
@@ -92,38 +160,6 @@ export const isValidMove = (piece, fromRow, fromCol, toRow, toCol, board) => {
     
     return true;
   };
-  // Check if the King is under attack
-// export const isKingInCheck = (color, board) => {
-//     let kingPosition = null;
-  
-//     // Find the king's position
-//     for (let row = 0; row < 8; row++) {
-//       for (let col = 0; col < 8; col++) {
-//         if (board[row][col]?.type === "king" && board[row][col]?.color === color) {
-//           kingPosition = { row, col };
-//           break;
-//         }
-//       }
-//     }
-  
-//     if (!kingPosition) return false; // King not found (error case)
-  
-//     // Check if any opponent piece can attack the king
-//     for (let row = 0; row < 8; row++) {
-//       for (let col = 0; col < 8; col++) {
-//         const piece = board[row][col];
-//         if (piece && piece.color !== color) {
-//           if (isValidMove(piece, row, col, kingPosition.row, kingPosition.col, board)) {
-//             return true; // King is in check
-//           }
-//         }
-//       }
-//     }
-  
-//     return false;
-//   };
-
-
   
   // Check if a player has any legal move left
   export const hasLegalMoves = (color, board) => {
@@ -217,7 +253,7 @@ export const isValidMove = (piece, fromRow, fromCol, toRow, toCol, board) => {
     return "ongoing";
   };
 
-  export const getPossibleMoves = (piece, row, col, board) => {
+  export const getPossibleMoves = (piece, row, col, board, castlingRights, isSuggested) => {
     let moves = [];
   
     if (!piece) return moves;
@@ -239,7 +275,7 @@ export const isValidMove = (piece, fromRow, fromCol, toRow, toCol, board) => {
         moves = [...getRookMoves(piece, row, col, board), ...getBishopMoves(piece, row, col, board)];
         break;
       case "king":
-        moves = getKingMoves(piece, row, col, board);
+        moves = getKingMoves(piece, row, col, board,castlingRights, isSuggested);
         break;
       default:
         break;
@@ -248,32 +284,6 @@ export const isValidMove = (piece, fromRow, fromCol, toRow, toCol, board) => {
     return moves;
   };
 
-  // Pawn Movement Logic
-  // const getPawnMoves = (piece, row, col, board) => {
-  //   let moves = [];
-  //   const direction = piece.color === "white" ? -1 : 1; // White moves up (-1), Black moves down (+1)
-  
-  //   // Normal move
-  //   if (!board[row + direction]?.[col]) {
-  //     moves.push({ row: row + direction, col });
-  //   }
-  
-  //   // First move (can move 2 squares)
-  //   if ((piece.color === "white" && row === 6) || (piece.color === "black" && row === 1)) {
-  //     if (!board[row + direction]?.[col] && !board[row + 2 * direction]?.[col]) {
-  //       moves.push({ row: row + 2 * direction, col });
-  //     }
-  //   }
-  
-  //   // Capture diagonally
-  //   [col - 1, col + 1].forEach((newCol) => {
-  //     if (board[row + direction]?.[newCol]?.color !== piece.color) {
-  //       moves.push({ row: row + direction, col: newCol });
-  //     }
-  //   });
-  
-  //   return moves;
-  // };
   const getPawnMoves = (piece, row, col, board) => {
     let moves = [];
     const direction = piece.color === "white" ? -1 : 1; // White moves up (-1), Black moves down (+1)
@@ -365,7 +375,7 @@ export const isValidMove = (piece, fromRow, fromCol, toRow, toCol, board) => {
   };
   
   // King Movement Logic (1 square in any direction)
-  const getKingMoves = (piece, row, col, board) => {
+  const getKingMoves = (piece, row, col, board, castlingRights) => {
     let moves = [];
     const movesList = [
       [1, 0], [-1, 0], [0, 1], [0, -1],
@@ -380,6 +390,17 @@ export const isValidMove = (piece, fromRow, fromCol, toRow, toCol, board) => {
         }
       }
     });
+
+    // Castling Suggestions
+    if (validateKingMove(row, col, row, 6, board, castlingRights, true)) {
+      moves.push({ row, col : 6 }); // King Side Castling
+      // console.log(moves);
+    }
+    if (validateKingMove(row, col, row, 2, board, castlingRights, true)) {
+      moves.push({ row, col : 2 }); // Queen Side Castling
+      // console.log(moves);
+    }
+
   
     return moves;
   };

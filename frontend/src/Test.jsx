@@ -1,86 +1,169 @@
-import HeroImage from "./assets/hero.png";
-import s1 from "./assets/s1.png";
-import s2 from "./assets/s2.png";
-import s3 from "./assets/s3.png";
+import React, { useState, useRef } from 'react';
+import { FaTimes, FaEye, FaEyeSlash } from 'react-icons/fa';
+import { useFriend } from './hooks/useFriend';
 
-import { FaSearch, FaInstagram, FaGithub, FaLinkedin, FaFacebook } from "react-icons/fa";
+const EditProfileModal = ({ isOpen, onClose, user }) => {
 
-const Card = ({ image, title, description }) => {
-   return (
-    <div className=" overflow-hidden">
-            <div className="w-full h-[30vh] ">
-              <img
-                src={image}
-                alt="Playing with friends"
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="flex flex-col items-start">
-                <p className="font-bold mt-2 text-lg">{title}</p>
-                <p className="text-gray-400 text-sm">{description}</p>
-            </div>
-            
-    </div>
-   )
-}
+  const [username, setUsername] = useState(user ? user.username : "");
+  const [email, setEmail] = useState(user ? user.email : "");
+  const [oldPassword, setOldPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [errors, setErrors] = useState({});
+  const [showPassword, setShowPassword] = useState(false);
+  const { updateProfile } = useFriend();
 
-export default function ChessHomepage() {
+  // const handleImageClick = () => {
+  //   fileInputRef.current.click();
+  // };
+
+  // const handleImageChange = (e) => {
+  //   const file = e.target.files[0];
+  //   if (file) {
+  //     if (!file.type.startsWith('image/')) {
+  //       setErrors((prev) => ({ ...prev, profileImg: 'File must be an image' }));
+  //       return;
+  //     }
+  //     if (file.size > 2 * 1024 * 1024) {
+  //       setErrors((prev) => ({ ...prev, profileImg: 'File size must be less than 2MB' }));
+  //       return;
+  //     }
+  //     setProfileImg(URL.createObjectURL(file));
+  //     setErrors((prev) => ({ ...prev, profileImg: '' }));
+  //   }
+  // };
+
+  const handleSave = () => {
+    const newErrors = {};
+
+    if ( username && username.length < 3) {
+      newErrors.username = 'Username must be at least 3 characters';
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (email && !emailRegex.test(email)) {
+      newErrors.email = 'Invalid email address';
+    }
+
+    if (newPassword && newPassword.length > 0 && newPassword.length < 6) {
+      newErrors.newPassword = 'New password must be at least 6 characters';
+    }
+
+    setErrors(newErrors);
+
+    if (Object.keys(newErrors).length === 0) {
+      updateProfile(username, email, oldPassword, newPassword);
+      onClose();
+    }
+  };
+
+  if (!isOpen) return null;
+
   return (
-    <div className="bg-[#121212] text-white min-h-screen flex flex-col justify-start items-center">
-      {/* Navbar */}
-      <nav className="flex justify-between items-center p-4 border-b border-gray-700 h-[10vh] w-[100%]">
-        <span className="text-lg font-semibold">Nerds Chess</span>
-        <div className="flex items-center gap-4">
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Search"
-              className="bg-gray-800 text-white px-3 py-1 rounded-md"
-            />
-            <FaSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-          </div>
-          <button className="bg-blue-600 px-4 py-2 rounded-md">Get Started</button>
-          <button className="border border-gray-500 px-4 py-2 rounded-md">Login</button>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+      <div className="bg-gray-800 text-white p-6 rounded-lg w-96 shadow-lg">
+        <div className="flex justify-between items-center border-b border-gray-700 pb-2 mb-4">
+          <h2 className="text-lg font-semibold">Edit Profile</h2>
+          <FaTimes className="cursor-pointer" onClick={onClose} />
         </div>
-      </nav>
 
-      {/* Hero Section */}
-      <div 
-        className="text-center flex flex-col justify-center items-center h-[80vh] w-[90%] bg-gray-800 bg-cover bg-center mx-6 my-8 rounded-lg relative object-cover"
-        style={{ backgroundImage: `url(${HeroImage})` }}
-      >
-        <h1 className="text-3xl font-bold relative z-10">Play chess online with friends and Random Players</h1>
-        <div className="mt-4 relative w-1/2">
-          <input
-            type="text"
-            placeholder="Find a friend to play chess with"
-            className="w-full px-4 py-2 rounded-md bg-gray-700 text-white"
+        {/* ✅ Profile Image
+        <div className="flex flex-col items-center mb-4">
+          <div 
+            className="w-24 h-24 rounded-full border-2 border-gray-600 overflow-hidden cursor-pointer transition-all hover:scale-105"
+            // onClick={handleImageClick}
+          >
+            <img 
+              src={profileImg} 
+              alt={"profile"}
+              className="w-full h-full object-cover flex justify-center items-center content-center"
+            />
+          </div>
+          <input 
+            type="file" 
+            ref={fileInputRef} 
+            style={{ display: 'none' }} 
+            onChange={handleImageChange} 
           />
-          <button className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-blue-600 px-4 py-2 rounded-md">
-            Search
+          {errors.profileImg && <p className="text-red-500 text-sm">{errors.profileImg}</p>}
+        </div> */}
+
+        {/* ✅ Username */}
+        <div>
+          <label className="block text-sm">Username</label>
+          <input 
+            type="text" 
+            className="w-full bg-gray-700 rounded p-2 text-white" 
+            value={username} 
+            onChange={(e) => setUsername(e.target.value)} 
+          />
+          {errors.username && <p className="text-red-500 text-sm">{errors.username}</p>}
+        </div>
+
+        {/* ✅ Email */}
+        <div className="mt-3">
+          <label className="block text-sm">Email</label>
+          <input 
+            type="email" 
+            className="w-full bg-gray-700 rounded p-2 text-white" 
+            value={email} 
+            onChange={(e) => setEmail(e.target.value)} 
+          />
+          {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
+        </div>
+
+        {/* ✅ Old Password */}
+        <div className="mt-3 relative">
+          <label className="block text-sm">Old Password</label>
+          <input 
+            type={showPassword ? 'text' : 'password'} 
+            className="w-full bg-gray-700 rounded p-2 text-white pr-10" 
+            value={oldPassword} 
+            onChange={(e) => setOldPassword(e.target.value)} 
+          />
+          <div 
+            className="absolute right-3 top-9 text-gray-400 cursor-pointer"
+            onClick={() => setShowPassword(!showPassword)}
+          >
+            {showPassword ? <FaEyeSlash /> : <FaEye />}
+          </div>
+        </div>
+
+        {/* ✅ New Password */}
+        <div className="mt-3 relative">
+          <label className="block text-sm">New Password</label>
+          <input 
+            type={showPassword ? 'text' : 'password'} 
+            className="w-full bg-gray-700 rounded p-2 text-white pr-10" 
+            value={newPassword} 
+            onChange={(e) => setNewPassword(e.target.value)} 
+          />
+          <div 
+            className="absolute right-3 top-9 text-gray-400 cursor-pointer"
+            onClick={() => setShowPassword(!showPassword)}
+          >
+            {showPassword ? <FaEyeSlash /> : <FaEye />}
+          </div>
+        </div>
+
+        {/* ✅ Buttons */}
+        <div className="flex justify-end mt-4">
+          <button 
+            className="bg-gray-600 text-white px-4 py-2 rounded mr-2" 
+            onClick={onClose}
+          >
+            Cancel
+          </button>
+          <button 
+            className="bg-green-600 text-white px-4 py-2 rounded" 
+            onClick={handleSave}
+          >
+            Save Changes
           </button>
         </div>
       </div>
-
-      {/* Two Ways to Play */}
-      <section className="text-center my-8 px-6 h-[50vh] w-[90%] overflow-hidden flex items-start flex-col">
-        <h2 className="text-2xl font-semibold mb-4">Two ways to play</h2>
-        <div className="flex gap-5 justify-center items-center">
-          <Card image={s1} title={"Play with your friends"} description={"Invite and play against your friends online"} />
-          <Card image={s2} title={"Play against random players online"} description={"Gain experience and increase your ELO rating"} />
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="text-center p-6 border-t border-gray-700 mt-8 w-full">
-        <div className="flex justify-center gap-6 text-gray-400 text-lg">
-          <a href="#"><FaInstagram /></a>
-          <a href="#"><FaGithub /></a>
-          <a href="#"><FaLinkedin /></a>
-          <a href="#"><FaFacebook /></a>
-        </div>
-        <p className="text-gray-500 mt-4">All rights reserved under 2024-25 Chess Master</p>
-      </footer>
     </div>
   );
-}
+};
+
+
+export default EditProfileModal;

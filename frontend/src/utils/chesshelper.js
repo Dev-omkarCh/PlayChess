@@ -1,0 +1,1 @@
+export const fileLetters = ["a", "b", "c", "d", "e", "f", "g", "h"];

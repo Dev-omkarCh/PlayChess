@@ -1,17 +1,52 @@
-import { FaChessPawn, FaChessRook, FaChessKnight, FaChessBishop, FaChessQueen, FaChessKing } from "react-icons/fa";
+import whitePawn from "../assets/pieces/wp.png";
+import blackPawn from "../assets/pieces/bp.png";
+
+import whiteRook from "../assets/pieces/wr.png";
+import blackRook from "../assets/pieces/br.png";
+
+import whiteKnight from "../assets/pieces/wn.png";
+import blackKnight from "../assets/pieces/bn.png";
+
+import whiteBishop from "../assets/pieces/wb.png";
+import blackBishop from "../assets/pieces/bb.png";
+
+import whiteQueen from "../assets/pieces/wq.png";
+import blackQueen from "../assets/pieces/bq.png";
+
+import whiteKing from "../assets/pieces/wk.png";
+import blackKing from "../assets/pieces/bk.png";
 
 const getChessIcon = (type, color) => {
-  const iconProps = { className: `text-3xl ${color === "white" ? "text-white" : "text-black"}` };
 
   switch (type) {
-    case "pawn": return <FaChessPawn {...iconProps} />;
-    case "rook": return <FaChessRook {...iconProps} />;
-    case "knight": return <FaChessKnight {...iconProps} />;
-    case "bishop": return <FaChessBishop {...iconProps} />;
-    case "queen": return <FaChessQueen {...iconProps} />;
-    case "king": return <FaChessKing {...iconProps} />;
+    case "pawn": {
+      if(color === "white") return whitePawn;
+      else return blackPawn
+    }
+    case "rook": {
+      if(color === "white") return  whiteRook;
+      else return blackRook
+    }
+    case "knight": {
+      if(color === "white") return  whiteKnight;
+      else return blackKnight
+    }
+    case "bishop": {
+      if(color === "white") return  whiteBishop;
+      else return blackBishop
+    }
+    case "queen": {
+      if(color === "white") return  whiteQueen;
+      else return blackQueen
+    }
+    case "king": {
+      if(color === "white") return  whiteKing;
+      else return blackKing
+    }
+
     default: return null;
   }
 };
 
 export default getChessIcon;
+

@@ -4,24 +4,23 @@ import { formatDateTime } from "../../utils/formatDate";
 import { IoClose } from "react-icons/io5";
 import useFriendStore from "../../store/useFriendStore";
 import toast from "react-hot-toast";
+import { useFriend } from "../../hooks/useFriend";
 
 const InboxModal = ({ isOpen, onClose, messages, setMessages }) => {
 
   const modalRef = useRef(null);
+  const { markAllMessagesAsRead, markMessageAsRead } = useFriend();
+  const [ read, setRead ] = useState(false);
 
-  const markAllAsRead = () => setMessages(messages.map(msg => ({ ...msg, isRead: true })));
-  const deleteAll = () => setMessages([]);
-  const markAsRead = async(id) => {
-     const data = await fetch(`/api/users/notification/read/${id}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-    const res = await data.json();
-    setMessages(messages.map(msg => msg._id === id ? { ...msg, isRead: true } : msg));
+  const markAllAsRead = () => {
+    markAllMessagesAsRead();
+    setMessages(messages.map(msg => ({ ...msg, isRead: true })));
   }
 
+  const deleteAll = () => {
+    markAllMessagesAsRead();
+    setMessages([]);
+  }
 
   const handleClickOutside = (event) => {
     if (modalRef.current && !modalRef.current.contains(event.target)) {
@@ -34,10 +33,22 @@ const InboxModal = ({ isOpen, onClose, messages, setMessages }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
 
+
+  const handleMessageRead = (id) => {
+    markMessageAsRead(id);
+    const newMessages = messages?.filter((msg)=>{
+      if(msg._id === id){
+        msg.isRead = true;
+      }
+      return msg
+    });
+    setMessages(newMessages);
+  }
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-[100]">
       <div ref={modalRef} className="bg-gray-800 w-96 p-4 rounded-lg shadow-lg relative animate-slide-in">
         <button className="absolute top-2 right-2 text-white hover:text-red-500 transition" onClick={onClose}><IoClose className="text-xl font-extrabold" /></button>
         <h2 className="text-lg font-bold text-white mb-4">Inbox</h2>
@@ -52,11 +63,11 @@ const InboxModal = ({ isOpen, onClose, messages, setMessages }) => {
           ) : (
             messages.map((msg) => (
               <div
+              onDoubleClick={()=> handleMessageRead(msg?._id) }
                 key={msg._id}
                 className={`p-3 rounded-lg cursor-pointer transition-all duration-300 flex justify-between items-center border-l-4 ${
                   msg.isRead ? "border-transparent bg-gray-700" : "border-blue-500 bg-gray-500 hover:bg-gray-600"
                 }`}
-                onClick={() => markAsRead(msg._id)}
               >
                 <div>
                   <p className="text-white font-bold">{msg.username}</p>
@@ -90,13 +101,7 @@ const Inbox = () => {
 
   // changes
   const { friendRequests, setFriendRequests } = useFriendStore();
-  const sortByRequest = friendRequests.filter((request) => request.type !== "friend-request").reverse();
-
-  // end
-
-  const unreadMessages = messages.filter((mess)=>{
-    return !mess.read
-  });
+  const sortByRequest = friendRequests.filter((request) => request.type !== "friend-request" && request.type !== "game-request" );
 
   return (
     <>

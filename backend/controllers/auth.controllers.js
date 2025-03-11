@@ -58,6 +58,7 @@ export const signup = async( req, res) =>{
                 profileImg: newUser.profileImg,
                 friends: newUser.friends,
                 gender : newUser.gender,
+                elo : newUser.elo,
             });
         }
         else{
@@ -88,6 +89,7 @@ export const login = async( req, res) =>{
             profileImg: user.profileImg,
             coverImage: user.coverImage,
             friends: user.friends,
+            elo : user.elo,
         });
     }
     catch(e){

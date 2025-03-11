@@ -7,12 +7,16 @@ import useAuth from "../store/useAuth";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import useLogout from "../hooks/useLogout";
+// import useSocket from "../hooks/useSocket";
 
 export default function PlayMenu() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { authUser, setAuthUser} = useAuth();
   const navigate = useNavigate()
-  const { loading, logout } = useLogout()
+  const { loading, logout } = useLogout();
+  
+  // TODO : Connection Point
+  // useSocket();
 
   const handleSendToProfile = () => {
     navigate('/profile');
@@ -64,7 +68,7 @@ export default function PlayMenu() {
           <button
             className="flex items-center justify-center gap-3 w-[90%] bg-green-500 hover:bg-green-600 active:translate-y-1 transition-all duration-300 py-3 rounded-lg text-lg font-bold shadow-[0_4px_0_#357a38] relative"
             data-tooltip-id="play-tooltip"
-            onClick={() => navigate("/play")}
+            onClick={() => navigate("/matchmaking")}
           >
             <FaPlay /> Play Now 
           </button>

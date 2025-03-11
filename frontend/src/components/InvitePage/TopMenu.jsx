@@ -3,6 +3,7 @@ import { FaSearch, FaBell } from "react-icons/fa";
 import InboxModal from "./InboxModal";
 import useSeachedUsers from "../../store/searchStore";
 import useFriendStore from "../../store/useFriendStore";
+import { useFriend } from "../../hooks/useFriend";
 
 export default function TopMenu() {
   const [isOpen, setIsOpen] = useState(false);
@@ -11,11 +12,13 @@ export default function TopMenu() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
   const { setSearchUser } = useSeachedUsers();
+  const { setGameId } = useFriendStore();
+  const { getAllUsres } = useFriend();
   // const [loading, setLoading] = useState(false);
 
   // changes
   const { friendRequests} = useFriendStore();
-  const sortByRequest = friendRequests.filter((request) => request.type === "friend-request");
+  const sortByRequest = friendRequests.filter((request) => request.type === "friend-request" || request.type === "game-request");
 
   // end
 
@@ -46,7 +49,7 @@ export default function TopMenu() {
 }, [query]);
 
   return (
-    <div className="flex items-center justify-evenly w-full h-[8%] bg-[#0d121e] p-2">
+    <div className="flex items-center justify-evenly w-full h-[8%] bg-[#0d121e] z-50 p-2">
       {/* Search Bar */}
       <div className="flex items-center bg-gray-800 text-gray-300 px-3 py-2 rounded-lg w-[80%] ml-8">
         <FaSearch className="text-gray-400 mr-2" />

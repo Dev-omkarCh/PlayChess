@@ -7,11 +7,9 @@ import App from './App';
 import { BrowserRouter } from 'react-router-dom';
 
 createRoot(document.getElementById('root')).render(
-  <StrictMode> 
     <BrowserRouter>
       <DndProvider backend={HTML5Backend}>
         <App />
       </DndProvider>
     </BrowserRouter>
-  </StrictMode>,
 )

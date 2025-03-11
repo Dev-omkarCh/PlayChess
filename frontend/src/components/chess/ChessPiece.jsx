@@ -10,9 +10,16 @@ const ChessPiece = ({ piece, position }) => {
     }),
   }));
 
+  
+
   return (
-    <div ref={drag} className={`cursor-pointer ${isDragging ? "opacity-50" : ""}`}>
-      {getChessIcon(piece.type, piece.color)}
+    <div ref={drag} className={`z-10 cursor-grab ${isDragging ? " cursor-grabbing" : ""} `}
+    style={{
+      backgroundImage : `url(${getChessIcon(piece.type, piece.color)})`,
+      height: "80%",
+      width: "80%",
+      backgroundSize : "cover" }} >
+        
     </div>
   );
 };

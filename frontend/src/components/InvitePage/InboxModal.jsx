@@ -7,6 +7,9 @@ import useFriendStore from "../../store/useFriendStore.js";
 import { IoClose } from "react-icons/io5";
 import { FiCheck } from "react-icons/fi";
 import { IoMdClose } from "react-icons/io";
+import { useFriend } from "../../hooks/useFriend.js";
+import { useOnlineStore } from "../../store/onlineStore.js";
+import toast from "react-hot-toast";
 
 const InboxModal = ({ isOpen, onClose ,sortByRequest }) => {
 
@@ -22,28 +25,41 @@ const InboxModal = ({ isOpen, onClose ,sortByRequest }) => {
   
   // changes
   const [messages, setMessages] = useState([]);
-  const { friendRequests, acceptFriendRequest, initSocketListeners, declineFriendRequest, setFriendRequests } = useFriendStore();
-
+  const { friendRequests, setFriendRequests } = useFriendStore();
+  const { initSocketListeners, acceptFriendRequest, declineFriendRequest, acceptGameRequest, declineGameRequest } = useFriend();
+  const {onlineUsers} = useOnlineStore();
+  
   useEffect(() => {
     initSocketListeners();
   }, []);
-
+  
   
   const handleAccept = (request) => {
-    acceptFriendRequest(request.from._id);
-
-    // changed oneLiner
-    console.log("request",request, "friendRequests",friendRequests);
-    console.log(friendRequests.filter((req) => req.from._id !== request.from._id));
-    setFriendRequests(friendRequests.filter((req) => req.from._id !== request.from._id));
+    const id = request.from._id ? request.from._id : request.from;
+    const isOnline = onlineUsers.includes(id);
+    
+    if(request.type === "friend-request"){
+      acceptFriendRequest(id);
+      setFriendRequests(sortByRequest.filter((req) => req._id !== request._id))
+    }
+    
+    if(isOnline){
+      if(request.type === "game-request"){
+        acceptGameRequest(id);
+      }
+    }
+    else{
+      toast.success(`${request?.username} went offline`)
+    }
   }
 
   const handleDecline = (request) => {
+    if(request.type === "decline-game-request"){
+      acceptFriendRequest(request.from._id);
+    }
      declineFriendRequest(request.from._id);
 
      // changed oneLiner
-     console.log("request",request, "friendRequests",friendRequests);
-     console.log(friendRequests.filter((req) => req.from._id !== request.from._id));
      setFriendRequests(friendRequests.filter((req) => req.from._id !== request.from._id));
   }
 
@@ -70,7 +86,7 @@ const InboxModal = ({ isOpen, onClose ,sortByRequest }) => {
 
   // changes
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-[100]">
       <div ref={modalRef} className="bg-gray-800 w-96 p-4 rounded-lg shadow-lg relative animate-slide-in">
         <button className="absolute top-2 right-2 text-white hover:text-red-500 transition" onClick={onClose}> <IoClose className="text-xl font-extrabold" /></button>
         <h2 className="text-lg font-bold text-white mb-4 pb-3 border-gray-700 border-b-2">Inbox</h2>
@@ -80,7 +96,7 @@ const InboxModal = ({ isOpen, onClose ,sortByRequest }) => {
           ) : (
             sortByRequest.map((msg) => (
               <div
-                key={msg.id}
+                key={msg._id}
                 className={`p-3 rounded-lg cursor-pointer transition-all duration-300 flex justify-between items-center border-l-4 ${
                   msg.isRead ? "border-transparent bg-gray-700" : "border-blue-500 bg-gray-700"
                 }`}

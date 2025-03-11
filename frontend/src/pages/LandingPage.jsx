@@ -1,10 +1,12 @@
-import React from 'react';
+import Hero from '../components/landingPage/Hero';
+import Footer from '../components/landingPage/Footer';
 import NavBar from '../components/landingPage/NavBar';
 
 const LandingPage = () => {
   return (
-    <div className='h-[100svh] w-[100shw]'>
-      <Nav />
+    <div className='h-dvh w-dvw'>
+      <NavBar />
+      <NavBar />
       <Hero />
       <Footer />
     </div>

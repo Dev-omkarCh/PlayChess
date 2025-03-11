@@ -1,10 +1,13 @@
 import { FaUserMinus, FaUserPlus } from "react-icons/fa";
 import useFriendStore from "../../store/useFriendStore";
+import { useFriend } from "../../hooks/useFriend";
 
 export default function SearchedFriend({ user }) {
 
   // changes tested
-  const { friends, sendFriendRequest } = useFriendStore();
+  const { friends} = useFriendStore();
+  const { sendFriendRequest } = useFriend();
+  
   const isFriend = friends.some((friend) => friend._id === user._id);
 
   const handleFriendRequest = async () => {
@@ -18,7 +21,7 @@ export default function SearchedFriend({ user }) {
   // end
 
   return (
-    <div className="flex items-center justify-between bg-gray-800 p-3 rounded-lg w-[380px]">
+    <div className="flex items-center justify-between bg-gray-800 p-3 rounded-lg w-[380px] z-10">
       <div className=" relative flex items-center space-x-3">
         {/* Avatar */}
         <div className={`w-12 h-12 rounded-full overflow-hidden flex items-center justify-center`}>

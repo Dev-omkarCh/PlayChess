@@ -20,8 +20,13 @@ import useAuth from './store/useAuth.js';
 import NotFound from './pages/NotFound.jsx';
 import InviteFriend from './pages/InviteFriend.jsx';
 import Inbox from './components/InvitePage/Inbox.jsx';
-import ChessHomepage from './test.jsx';
-import { useOnlineStatus } from './hooks/useOnlineStatus.js';
+// import ChessHomepage from './test.jsx';
+import useSocket from './hooks/useSocket.js';
+import LeaderBoard from './components/LeaderBoard.jsx';
+import Toast from './components/MyToast.jsx';
+import useFriendStore from './store/useFriendStore.js';
+// import MatchMaking from './components/MatchMaking.jsx';
+// import { useOnlineStatus } from './hooks/useOnlineStatus.js';
 // import useOnlineStatus from './hooks/useOnlineStatus.js';
 
 const App = () => {
@@ -29,8 +34,10 @@ const App = () => {
   // const isOnline = useOnlineStatus();
 
   const { authUser } = useAuth();
+  const { request } = useFriendStore();
+  useSocket();
   // changes : Online status
-  useOnlineStatus(authUser?._id);
+  // useOnlineStatus(authUser?._id);
 
   return (
     <>
@@ -39,7 +46,6 @@ const App = () => {
         <Route path="/about" element={<About />} />
         <Route path="/login" element={authUser ? <Navigate to="/menu" /> :<Login />} />
         <Route path="/signup" element={authUser ? <Navigate to="/menu" /> :<Signup />} />
-        <Route path="/request" element={<FriendRequest />} />
         <Route path="/puzzle" element={<PuzzleCard />} />
         <Route path="/menu" element={authUser ? <GameMenu /> : <Navigate to="/login" />} />
         <Route path="/profile" element={authUser ? <Profile /> : <Navigate to="/login" />} />
@@ -48,8 +54,9 @@ const App = () => {
         <Route path="/multiplayer" element={<MultiplayerGame />} />
         <Route path="*" element={<NotFound />} />
         <Route path='/invite' element={authUser? <InviteFriend /> : <Navigate to={"/login"}/>} />
-        <Route path='/inbox' element={<Inbox />} />
-        <Route path='/test' element={<ChessHomepage />} />
+        <Route path='/leaderBoard' element={authUser? <LeaderBoard /> : <Navigate to={"/login"}/>} />
+        {/* <Route path='/matchmaking' element={<MatchMaking />} /> */}
+        {/* <Route path='/test' element={<ChessHomepage />} /> */}
     </Routes>
   
     <Toaster 
@@ -63,6 +70,8 @@ const App = () => {
         zIndex: 50,
       }}
     />
+
+    {request && <Toast />}
     </>
   );
 };

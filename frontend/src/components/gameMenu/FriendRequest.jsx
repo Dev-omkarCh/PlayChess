@@ -12,7 +12,8 @@ const FriendRequest = () => {
     };
 
     const acceptFriendRequest = (request) => {
-        setFriendRequests(friendRequests.filter((req) => req !== request));
+        console.log(request);
+        // setFriendRequests(friendRequests.filter((req) => req !== request));
         // Add logic to handle accepted friend request
     };
 

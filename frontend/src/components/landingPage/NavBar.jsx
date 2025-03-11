@@ -1,30 +1,81 @@
-import Logo from '../../assets/gg.png';
-import { IoPerson } from 'react-icons/io5';
-import { Link, useLocation } from "react-router-dom";
-import ToggleTheme from './ToggleTheme';
-
+import React, { useState } from 'react';
+import { FaChessKnight } from 'react-icons/fa';
+import { Avatar } from "../../components/ui/avatar";
+import { FaBars } from 'react-icons/fa';
+import useAuth from '../../store/useAuth';
+import { IoPersonCircleSharp } from "react-icons/io5";
+import { Link, useNavigate } from 'react-router-dom';
+import { getRandomColor } from '../../utils/randomColorGenerator';
 const NavBar = () => {
+  const { authUser } = useAuth();
+  const [isOpen, setIsOpen] = useState(false);
+  const [ profileImg, setProfileImg ] = useState(authUser ? authUser.profileImg : "");
+  const navigate = useNavigate();
 
-  const url = useLocation().pathname;
-  
+  console.log("hello")
   return (
-    <div className={`h-[8%] w-full flex bg-primary_dark_deep text-white`}>
-      <div className='w-[50%] h-full flex justify-center items-center text-white gap-7 relative'>
-        <img src={Logo} alt="hello" className='pl-2 h-[10rem] mb-2 absolute left-0 hidden md:flex' />
-        <Link to={"/"} className={`${url === "/" && "text-accent_color_dark font-bold"}`}>Home</Link>
-        <Link to={"/about"} className={`${url === "/about" && "text-accent_color_dark font-bold"}`}>About</Link>
+    <nav className="bg-zinc-800 p-4 flex items-center justify-between shadow-lg ">
+      <div className="flex items-center gap-4">
+        <FaChessKnight className="text-[#6CA72E] text-2xl" />
+        <h1 className="text-white font-semibold text-lg">ChessNerds</h1>
       </div>
-      
-      <div className={`w-[50%] flex justify-end items-center gap-3 text-white`}>
-          {/* Icons Section */}
-          <ToggleTheme />
-          <div className='h-fit p-2 bg-gray-700 rounded-full mr-2 '>
-            <IoPerson className='text-[1.2rem]' />
-          </div>
-      </div>
-      
-    </div>
-  )
-}
 
-export default NavBar
+      <div className="hidden md:flex items-center gap-6">
+        <Link to="/" className="text-white hover:text-[#A8E639]">Home</Link>
+        <Link to="/profile" className="text-white hover:text-[#A8E639]">Profile</Link>
+        <Link to="/leaderBoard" className="text-white hover:text-[#A8E639]">leaderBoard</Link>
+        <div className="flex items-center">
+          {authUser ? (
+            <button onClick={()=> navigate("/profile")}>
+              <img 
+                className="w-10 h-10 rounded-full border-2 border-[#A8E639]" 
+                src={profileImg} 
+                alt="Profile"
+              />
+          </button>
+          ) : (
+            <div className="w-10 h-10 rounded-full border-2 border-gray-500 flex items-center justify-center text-white">
+              <button onClick={()=> navigate("/login")}>
+                <IoPersonCircleSharp className='h-10 w-10' title='login' />
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Hamburger Menu */}
+      <div className="md:hidden">
+        <FaBars className="text-white text-2xl" onClick={() =>{ console.log("open");  setIsOpen(!isOpen)} } />
+      </div>
+
+      {isOpen && (
+        <div className="absolute z-[100] top-16 right-4 bg-[#2C2C2C] p-4 flex justify-center items-center shadow-lg rounded-lg md:hidden w-[50%] h-[50%] flex-col-reverse gap-5">
+          <Link to="/leaderBoard" className="text-white hover:text-[#A8E639]">leaderBoard</Link>
+          <Link to="/profile" className="text-white hover:text-[#A8E639]">Profile</Link>
+          <Link to="/" className="text-white hover:text-[#A8E639]">Home</Link>
+          <div className="flex justify-center items-center">
+            {authUser ? (
+              <Avatar>
+                <button className={`${getRandomColor()}`} onClick={()=> navigate("/profile")}>
+                  <img 
+                    className=" rounded-full border-2 border-[#A8E639]" 
+                    src={profileImg} 
+                  />
+                </button>
+                
+              </Avatar>
+            ) : (
+              <div className="w-20 h-20 rounded-full border-2 border-gray-500 flex items-center justify-center text-white">
+                <button onClick={()=> navigate("/login")}>
+                  <IoPersonCircleSharp className='h-20 w-20' title='login' />
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </nav>
+  );
+};
+
+export default NavBar;

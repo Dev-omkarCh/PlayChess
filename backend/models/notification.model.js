@@ -10,10 +10,15 @@ const notificationSchema = new mongoose.Schema({
         ref: "User",
         required: true
     },
+    gameId : {
+        type : String,
+        default : ""
+    }
+    ,
     type: { 
         type: String,
         // changes
-        enum: ["friend-request","accepted-friend-request","declined-friend-request","game-request", "game-result"],
+        enum: ["friend-request","accepted-friend-request","declined-friend-request","game-request","accept-game-request","decline-game-request", "game-result"],
         // end
         required: true
     },

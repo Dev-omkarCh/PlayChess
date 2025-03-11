@@ -27,6 +27,20 @@ const userSchema = new mongoose.Schema({
         type : Number,
         default : 400
     },
+    rapid : {
+        win : {
+            type : Number,
+            default : 0,
+        },
+        lose : {
+            type : Number,
+            default : 0
+        },
+        draw : {
+            type : Number,
+            default : 0
+        }
+    },
     friends:[
         {
             type : mongoose.Schema.Types.ObjectId ,

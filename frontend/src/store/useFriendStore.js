@@ -1,50 +1,34 @@
-import { create } from "zustand";
-import { io } from "socket.io-client";
 import toast from "react-hot-toast";
-import { getFriends } from "../../../backend/controllers/user.controllers";
-import { Navigate, useNavigate } from "react-router-dom";
-import Login from "../pages/Login";
-import { useSocket } from "../hooks/useSocket";
+import { create } from "zustand";
 
-// TODO : socketStore already consists of socket connection, so we can use that instead of creating a new one here, if Anything went wrong
-// const socket = io("http://localhost:4000");
-const socket = useSocket();
+const useFriendStore = create((set) => ({
 
-const useFriendStore = create((set, get) => ({
-
-    // changes
-    friendRequests: [],
+    request: null,
+    setRequest: (request) => set({ request }),
+    
     friends: [],
+    setFriend: (friend) => set((state) => ({ friends: [...state.friends, friend] })),
+    
+    friendRequests: [],
     setFriendRequests: (requests) => set({ friendRequests: requests }),
 
-    getFriendRequests: async () => {
-        const response = await fetch("/api/users/requests", {
-            method: "GET",
-            headers: { "Content-Type": "application/json" },
-        });
-        const data = await response.json();
-        set({ friendRequests: data });
-        return data;
-    },
+    setFriendRequest: (request) => set((state) => ({ friendRequests: [...state.friendRequests, request] })),
 
-    getFriends: async () => {
-        const response = await fetch("/api/users/friends", {
-            method: "GET",
-            headers: { "Content-Type": "application/json" },
-        });
-        if(response.status === 500){
-            toast.error("Internet Connection Error")
-            return
-        }
-        const data = await response.json();
-        console.log("data", data);
-        set({ friends: data });
-        return data;
-    },
-    
-    sendFriendRequest: async (receiverId) => {
-        const response = await fetch(`/api/users/send/friend-request/${receiverId}`, {
+    gameRequests : [],
+    users : [],
+    setUsers : ( users ) => set({ users }),
+    gameId : "",
+    user : null,
+    setUser : (user) => set({ user }),
+
+    history : [],
+    setHistory : (history) => set({ history }),
+
+    saveGame : async (room, white, black,notation,newResult,beforeElo, afterElo) =>{
+        
+        const response = await fetch(`/api/users/save`, {
             method: "POST",
+            body: JSON.stringify({room, white, black, moves : notation, result : newResult, beforeElo, afterElo}),
             headers: { "Content-Type": "application/json" },
         });
         const data = await response.json();
@@ -52,38 +36,19 @@ const useFriendStore = create((set, get) => ({
         return data;
     },
 
-    acceptFriendRequest: async (requestId) => {
-        const data = await fetch(`/api/users/send/accept-request/${requestId}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-        });
-        const response = await data.json();
-        toast.success(response.msg);
-    },
+    opponent : {},
+    setOpponent : (opponent) => set({ opponent : opponent }),
 
-    declineFriendRequest: async (requestId) => {
-        const data = await fetch(`/api/users/send/deny-request/${requestId}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-        });
-        const response = await data.json();
-        toast.success(response.msg);
-    },
-    
+    setGameId : (gameId) => set({ gameId : gameId }),
+
     setFriends: (friends) => set({ friends }),
+    // setFriends: (friends) => set({ friends }),
 
-    // end
+    // setFriendRequests: (requests) => set((state) => ({ friendRequests: [...state.friendRequests, requests] })),
+    
+    setGameRequests: (requests) => set({ gameRequests: requests }),
+    // setGameRequests: (requests) => set((state) => ({ gameRequests: [...state.gameRequests, requests] })),
 
-
-    initSocketListeners: () => {
-        socket.on("friendRequest", (data) => {
-            set((state) => ({ friendRequests: [...state.friendRequests, data] }));
-        });
-
-        socket.on("friendRequestAccepted", (data) => {
-            set((state) => ({ friends: [...state.friends, data] }));
-        });
-    }
 }));
 
 export default useFriendStore;

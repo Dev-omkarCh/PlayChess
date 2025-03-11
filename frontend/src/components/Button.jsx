@@ -25,16 +25,22 @@ const colorSchema = {
     bgDisabled: "bg-purple-900 hover:bg-purple-900",
     shadow: "shadow-[0_4px_0_#7e22ce]"
   },
+  gray :{
+    bgColor: "bg-gray-800 hover:bg-gray-700",
+    bgDisabled: "bg-purple-900 hover:bg-purple-900",
+    shadow: "shadow-[0_4px_0_#374151]"
+  }
 }
 
-const Button = ({ text, type, handleOnClick, className, disabled = false, noScale = false, color = "green" }) => {
+const Button = ({ text, type, handleOnClick, className, disabled = false, noScale = false, color = "green", width }) => {
 
   // Dynamic Color based on the color prop
   const choosedColor = colorSchema[color];
 
   return (
     <button type={type ? type : "button"} onClick={handleOnClick}
-      className={`w-full mt-6 p-1 py-2 rounded-lg text-lg font-bold ${choosedColor.shadow}
+      className={` p-1 py-2 rounded-lg text-lg font-bold ${choosedColor.shadow}
+        ${width ? width : "w-full"}
         active:translate-y-1 active:shadow-none transition-all duration-300 text-white
         transform ${disabled ? choosedColor.bgDisabled : `${choosedColor.bgColor} ${!noScale && "hover:scale-105"}`}
         ${className}`}
