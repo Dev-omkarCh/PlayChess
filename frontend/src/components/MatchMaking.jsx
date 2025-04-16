@@ -3,18 +3,29 @@ import { useNavigate } from 'react-router-dom';
 import { useMainSocket } from '../store/socketIoStore';
 // import { useMatchmaking } from '../hooks/useMatchMaking';
 import Button from './Button';
+import { useMatchmaking } from '../hooks/useMatchMaking';
+import useSocketStore from '../store/socketStore';
+import useAuth from '../store/useAuth';
 
 export default function Matchmaking() {
     const [timeLeft, setTimeLeft] = useState(300); // 5 minutes countdown
     const [searchText, setSearchText] = useState('Finding Match...');
+    const { startGameListener  } = useSocketStore();
     // const navigate = useNavigate();
-    // const { joinQueue } = useMatchmaking();
+    const { joinQueue } = useMatchmaking();
+    const { socket } = useMainSocket();
+    const navigate = useNavigate();
+    const { authUser } = useAuth();
     
     // Dynamic Text Changes
 
+    socket?.on("startRandomGame",(roomId)=>{
+        navigate("/multiplayer");
+    })
+
     const handleStartMatchMaking = () => {
 
-        // joinQueue();
+        joinQueue();
 
         const texts = [
             'Finding Match...',
@@ -59,7 +70,7 @@ export default function Matchmaking() {
             <div className="bg-[#1b1b3a] p-6 rounded-xl shadow-2xl border-4 border-purple-600 w-[600px] flex flex-col gap-5 relative overflow-hidden">
 
                 {/* Animated Glow Effect */}
-                <div className="absolute -inset-2 bg-purple-600 opacity-10 blur-2xl rounded-xl animate-pulse"></div>
+                <div className="absolute -inset-2 bg-purple-600 opacity-10 blur-2xl rounded-xl"></div>
 
                 {/* Header */}
                 <h1 className="text-white text-2xl font-bold text-center">
@@ -72,12 +83,12 @@ export default function Matchmaking() {
                     {/* Your Profile */}
                     <div className="flex flex-col items-center gap-2">
                         <img 
-                            src=""
+                            src={authUser?.profileImg}
                             alt="You"
                             className="w-20 h-20 rounded-full border-4 border-purple-500 shadow-lg"
                         />
                         <h2 className="text-white font-semibold">You</h2>
-                        <p className="text-gray-400 text-sm">Elo: 1342</p>
+                        <p className="text-gray-400 text-sm">{authUser?.elo}</p>
                     </div>
 
                     {/* Versus */}

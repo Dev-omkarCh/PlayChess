@@ -32,8 +32,8 @@ const ProfileSideBar = () => {
   const winRate = () => {
      const totalValue = history?.length;
      const value = user?.rapid?.win;
-     const rate = (value/totalValue)*100;
-     return rate;
+     const rate = (value / totalValue) * 100;
+     return rate.toFixed(2);
   }
 
   return (

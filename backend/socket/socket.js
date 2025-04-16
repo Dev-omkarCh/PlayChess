@@ -13,6 +13,7 @@ const io = new Server(server,{
 });
 
 const userSocketMap = {};
+const userIdMap = {};
 const gameRooms = {}; // Store game rooms and players
 let matchmakingQueue = [];
 
@@ -56,12 +57,23 @@ io.on("connection", (socket) => {
     }
   });
 
-  // // Add player to the queue
-  // socket.on("joinQueue", () => {
-  //   matchmakingQueue.push(socket.id);
-  //   console.log("joinQueue", matchmakingQueue);
-  //   checkForMatch(socket);
-  // });
+  // Add player to the queue
+  socket.on("joinQueue", () => {
+    if (!matchmakingQueue.includes(socket.id)) {
+      matchmakingQueue.push(socket.id);
+      
+      //
+      userIdMap[socket.id] = userId;
+
+      console.log(`Player ${socket.id} added to matchmaking queue.`);
+      checkForMatch();
+    }
+  });
+
+  socket.on("reload", (room) => {
+    console.log(room);
+   io.emit("reloaded", room)
+  });
 
   // Handle move events
   socket.on("movePiece", ({ room, move }) => {
@@ -90,8 +102,12 @@ io.on("connection", (socket) => {
 
   socket.on("gameOver",(room)=>{
     if(room){
-      socket.to(room).emit("stopGameLogic",room);
+      socket.leave(room);
+      if(gameRooms[room]){
+        delete gameRooms[room];
+      }
     }
+    console.log("gameRooms",gameRooms)
   })
 
   socket.on("isCheckmated",(room)=>{
@@ -131,8 +147,8 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => {
 
     delete userSocketMap[userId];
+    delete userIdMap[socket.id];
     socket.emit("online_users", Object.keys(userSocketMap)); // Notify others
-
     
     for (const room in gameRooms) {
       gameRooms[room] = gameRooms[room].filter((id) => id !== socket.id);
@@ -143,21 +159,30 @@ io.on("connection", (socket) => {
   });
 });
 
-// // Create room and notify players
-// function checkForMatch(socket) {
-//   if (matchmakingQueue.length >= 2) {
-//       const [player1, player2] = matchmakingQueue.splice(0, 2);
-//       const roomId = `room_${player1}_${player2}`;
+// Create room and notify players
+function checkForMatch() {
+  if (matchmakingQueue.length >= 2) {
+      const [player1, player2] = matchmakingQueue.splice(0, 2);
+      const roomId = `room_${player1}_${player2}`;
 
-//       io.to(player1).emit("matchFound", { roomId, color: "white" });
-//       io.to(player1).emit("assignColor", "white");
-      
-//       io.to(player2).emit("matchFound", { roomId, color: "black" });
-//       io.to(player2).emit("assignColor", "black");
+      console.log(`Match Found: ${player1} vs ${player2} in ${roomId}`);
 
-//       socket.join(roomId);
-//       io.to(roomId).emit("startGame", { roomId });
-//   }
-// }
+      const socket1 = io.sockets.sockets.get(player1);
+      const socket2 = io.sockets.sockets.get(player2);
+
+      if (socket1 && socket2) {
+        socket1.join(roomId);
+        socket2.join(roomId);
+
+        io.to(player1).emit("matchFound", { roomId, color: "white", opponentId: userIdMap[player2] });
+        io.to(player2).emit("matchFound", { roomId, color: "black", opponentId: userIdMap[player1] });
+
+        io.to(roomId).emit("startRandomGame", { roomId });
+      } 
+      else {
+        console.log("One or both players disconnected before match start.");
+      }
+  }
+}
 
 export { app, io, server };

@@ -27,7 +27,7 @@ const ProfileMainSection = () => {
         }
 
         return (
-          <div className="bg-[#313338] p-3 flex items-center justify-between rounded-md w-full">
+          <div className="bg-[#313338] p-3 flex items-center justify-between rounded-md w-[90%]">
             {/* User Info */}
             <div className="flex items-center gap-3">
               <div className="w-fit h-fit bg-red-500 rounded-full flex items-center justify-center">
@@ -68,7 +68,7 @@ const ProfileMainSection = () => {
    }
 
   return (
-    <div className="w-3/4 p-5 bg-[#2b2d31] overflow-y-auto">
+    <div className="w-3/4 p-5 bg-[#2b2d31] h-dvh">
             <div className="flex border-b border-gray-700 mb-4">
               <button 
                 className={`px-4 py-2 ${activeTab === 'games' ? 'text-green-400 border-b-2 border-green-400' : 'text-gray-400'}`} 
@@ -79,7 +79,7 @@ const ProfileMainSection = () => {
             </div>
     
             {activeTab === 'games' && (
-                <div className="bg-[#1e1f22] rounded p-4 space-y-4 h-[90%]">
+                <div className="bg-[#1e1f22] flex justify-start items-center flex-col rounded p-4 space-y-4 h-[90%] overflow-y-auto">
                     {history?.map((game)=>{
                         return <Games key={game._id} game={game} ratingCal={calulateRatingDifference(game)} />
                     })}

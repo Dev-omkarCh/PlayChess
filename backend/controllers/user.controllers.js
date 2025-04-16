@@ -3,6 +3,7 @@ import  Notifications from "../models/notification.model.js";
 import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import { isInRoom } from "../socket/socket.js";
+import GameStatus from "../models/gameStatus.model.js";
 
 export const searchByUserName = async(req, res) =>{
     try {
@@ -397,7 +398,7 @@ export const declineGameRequest = async(req,res) =>{
                 message : `${user.username} declined you a game request`,
             });
 
-            res.json({ msg: "Request send Successfully" });
+            res.json({ msg: "Decline Game Request Successfully" });
         } else {
             res.json({ msg: "Already had send the friend request" });
         }
@@ -539,8 +540,6 @@ export const getLeaderboard = async (req, res) => {
       });
     }
   };
-  
-
 
 // TODO : shift the function to notification controller if not lazy
 // TODO : On frontend button, only allow once to send this api request
@@ -597,4 +596,167 @@ export const markMessageAsRead = async(req, res) =>{
     }
 }
 
-// end
+export const saveGameStatusOnReLoad = async(req, res) =>{
+    try {
+        const { board, turn, notations, playerColor, capturedPieces, opponent, roomId } = req.body;
+        const userId = req.user._id;
+        const user = await User.findById(userId);
+
+        if(!user && !opponent && !playerColor && !roomId){
+            return res.status(400).json({ msg: "Error Code 1" });
+        }
+
+        const white = playerColor === "white" ? user : opponent;
+        const black = playerColor === "black" ? user : opponent;
+
+        const alreadySaved = await GameStatus.findOne({
+            $or : [
+                { white: userId },
+                { black: userId }
+            ],
+            roomId,
+            playerColor
+        });
+
+        if(!alreadySaved){
+            console.log("First Game Reload");
+            const gameStatus = await GameStatus.create({
+                white,
+                black,
+                turn,
+                playerColor,
+                notations,
+                roomId,
+                board,
+            });
+            return res.status(201).json({ msg: "The game didn't existed, so we create one", gameStatus });
+        }
+        else{
+            console.log("Nth Game Reload");
+
+            alreadySaved.board = board;
+            alreadySaved.turn = turn;
+            alreadySaved.notations = notations
+
+            alreadySaved.save();
+        }
+        return res.json({ msg: "Game Saved Successfully", gameStatus : alreadySaved });
+    } 
+    catch (e) {
+        console.log("Error in saveGameStatusOnReLoad Controller", e.message);
+        res.status(500).json({ error: "Internal Server Error" });
+        
+    }
+}
+
+export const checkIfGameReloaded = async(req, res) =>{
+    console.log("Check if we have GameStatus")
+    try {
+        const userId = req.user._id;
+
+        const gameStatus = await GameStatus.findOne({
+            $or : [
+                { white: userId },
+                { black: userId }
+            ],
+        });
+
+        if(!gameStatus) return res.status(400).json({ msg: "no gameHistory exists"});
+
+        const playerColor = gameStatus.white.toString() === userId.toString() ? "white" : "black";
+
+        const gameStatusAgain = await GameStatus.findOne({
+            $or : [
+                { white: userId },
+                { black: userId }
+            ],
+            playerColor
+        });
+
+        if(!gameStatusAgain) return res.status(400).json({ msg: `no gameHistory for ${playerColor} exists`});
+
+        res.status(200).json({ msg: "checkIfGameReloaded Ended", gameStatus: gameStatusAgain });
+    } 
+    catch (e) {
+        console.log("Error in checkIfGameReloaded Controller", e.message);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+}
+
+export const getChessAnalytics = async (req, res) => {
+  try {
+    const users = await User.find();
+    const totalPlayers = users.length;
+    const activePlayers = await User.countDocuments({ lastActive: { $gte: new Date(Date.now() - 86400000) } });
+    
+    const totalGames = await GameHistory.countDocuments();
+    const avgMovesPerGame = Math.round(await GameHistory.aggregate([{ $group: { _id: null, avgMoves: { $avg: { $size: "$moves.white" } } } }])[0]?.avgMoves || 30);
+
+    const eloProgress = await GameHistory.aggregate([
+      { $project: { date: { $dateToString: { format: "%Y-%m", date: "$createdAt" } }, elo: "$rating.white.after" } },
+      { $group: { _id: "$date", avgElo: { $avg: "$elo" } } },
+      { $sort: { _id: 1 } }
+    ]);
+
+    const gameResults = await GameHistory.aggregate([
+      { $group: { _id: "$type", count: { $sum: 1 } } }
+    ]);
+
+    const eloDistribution = await User.aggregate([
+      {
+        $bucket: {
+          groupBy: "$elo",
+          boundaries: [1000, 1200, 1400, 1600, 1800, 2000, 2200, 2400, 2600],
+          default: "2600+",
+          output: { count: { $sum: 1 } }
+        }
+      }
+    ]);
+
+    res.json({
+      totalPlayers,
+      activePlayers,
+      totalGames,
+      avgMovesPerGame,
+      eloProgress,
+      gameResults,
+      eloDistribution
+    });
+
+  } catch (error) {
+    res.status(500).json({ error: "Error fetching analytics data" });
+  }
+};
+
+export const getAllUserss = async (req, res) => {
+    try {
+        const users = await User.find({}).select("-password");
+        res.status(200).json(users);
+    } catch (error) {
+        console.error("Error getAllUsers controller:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
+export const getAllNotifications = async (req, res) => {
+    try {
+        const notifications = await Notifications.find({})
+            .sort({ createdAt: -1 });
+        res.status(200).json(notifications);
+    } catch (error) {
+        console.error("Error getAllNotifications controller:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+}
+
+export const getAllGameHistory = async (req, res) => {
+    try {
+        const gameHistory = await GameHistory.find({})
+            .sort({ createdAt: -1 });
+        res.status(200).json(gameHistory);
+    } catch (error) {
+        console.error("Error getAllGameHistory controller:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+}
+

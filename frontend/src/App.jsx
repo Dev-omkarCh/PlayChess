@@ -20,12 +20,15 @@ import useAuth from './store/useAuth.js';
 import NotFound from './pages/NotFound.jsx';
 import InviteFriend from './pages/InviteFriend.jsx';
 import Inbox from './components/InvitePage/Inbox.jsx';
-// import ChessHomepage from './test.jsx';
+import ChessHomepage from './Test.jsx';
 import useSocket from './hooks/useSocket.js';
 import LeaderBoard from './components/LeaderBoard.jsx';
 import Toast from './components/MyToast.jsx';
 import useFriendStore from './store/useFriendStore.js';
-// import MatchMaking from './components/MatchMaking.jsx';
+import MatchMaking from './components/MatchMaking.jsx';
+import SettingsModal from './components/Settings.jsx';
+import MultiplayerDemo from './pages/M.jsx';
+import GameAnalytics from './pages/GameAnalytics.jsx';
 // import { useOnlineStatus } from './hooks/useOnlineStatus.js';
 // import useOnlineStatus from './hooks/useOnlineStatus.js';
 
@@ -46,7 +49,6 @@ const App = () => {
         <Route path="/about" element={<About />} />
         <Route path="/login" element={authUser ? <Navigate to="/menu" /> :<Login />} />
         <Route path="/signup" element={authUser ? <Navigate to="/menu" /> :<Signup />} />
-        <Route path="/puzzle" element={<PuzzleCard />} />
         <Route path="/menu" element={authUser ? <GameMenu /> : <Navigate to="/login" />} />
         <Route path="/profile" element={authUser ? <Profile /> : <Navigate to="/login" />} />
         <Route path="/dash" element={<Dashboard />} />
@@ -55,8 +57,13 @@ const App = () => {
         <Route path="*" element={<NotFound />} />
         <Route path='/invite' element={authUser? <InviteFriend /> : <Navigate to={"/login"}/>} />
         <Route path='/leaderBoard' element={authUser? <LeaderBoard /> : <Navigate to={"/login"}/>} />
-        {/* <Route path='/matchmaking' element={<MatchMaking />} /> */}
-        {/* <Route path='/test' element={<ChessHomepage />} /> */}
+        <Route path='/matchmaking' element={<MatchMaking />} />
+        <Route path="/puzzle" element={<PuzzleCard />} />
+        <Route path="/settings" element={<SettingsModal />} />
+        <Route path='/test' element={<ChessHomepage />} />
+        <Route path='/design' element={<MultiplayerDemo />} />
+        <Route path='/gg' element={authUser? <GameAnalytics /> : <Navigate to={"/login"}/>} />
+        
     </Routes>
   
     <Toaster 

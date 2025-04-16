@@ -14,7 +14,12 @@ import { useNavigate } from "react-router-dom";
 import { useMainSocket } from "../store/socketIoStore";
 import Toast from "../components/MyToast";
 
+// #222832
+// #1c2028
+// #181d27
+
 export default function FriendsSidebar() {
+  // useSocket();
 
   const { getFriendRequests, getFriends ,getGameRequests, getAllUsres } = useFriend();
   const { startGameListener } = useSocketStore();
@@ -22,23 +27,19 @@ export default function FriendsSidebar() {
   const { friends, friendRequests, users } = useFriendStore();
   const {socket} = useMainSocket()
 
-  // TODO : Connection Point
-  // useSocket();
   startGameListener();
   
-  // Changes tested
   useEffect(() => {
     getFriendRequests();
     getGameRequests();
     getFriends();
     // getAllUsres()
-    
   }, []);
   
   // end
 
   return (
-    <div className="h-[100dvh] w-[100dvw] flex bg-primary">
+    <div className="h-[100dvh] w-[100dvw] flex ">
       <SideBar />
       <div className="h-full w-[80%] flex flex-col">
         <TopMenu />

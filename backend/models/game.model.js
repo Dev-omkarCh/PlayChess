@@ -24,7 +24,6 @@ const gameHistorySchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    // captured: {
     //   white: {
     //     type: Array,
     //     default: [],

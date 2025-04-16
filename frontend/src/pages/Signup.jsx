@@ -81,7 +81,7 @@ export default function Signup() {
               </button>
             </div>
           </div>
-          <p className="text-center text-gray-400 mt-4">
+          <p className="text-center text-gray-400 my-4">
             Already have an account? <Link to="/login" className="text-green-500 hover:underline">login</Link>
           </p>
           <Button type={"submit"} text={loading ? <Spinner /> : "Signup"} disabled={loading} />

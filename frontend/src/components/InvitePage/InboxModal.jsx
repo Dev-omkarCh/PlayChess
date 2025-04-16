@@ -54,10 +54,12 @@ const InboxModal = ({ isOpen, onClose ,sortByRequest }) => {
   }
 
   const handleDecline = (request) => {
-    if(request.type === "decline-game-request"){
-      acceptFriendRequest(request.from._id);
+    if(request.type === "game-request"){
+      declineGameRequest(request.from._id);
     }
-     declineFriendRequest(request.from._id);
+    else{
+      declineFriendRequest(request.from._id);
+    }
 
      // changed oneLiner
      setFriendRequests(friendRequests.filter((req) => req.from._id !== request.from._id));

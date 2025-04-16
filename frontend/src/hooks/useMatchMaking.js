@@ -1,35 +1,32 @@
-// import { useEffect } from 'react';
-// import { useMainSocket } from '../store/socketIoStore';
-// import { useNavigate } from 'react-router-dom';
-// import useSocketStore from './useRoom';
-// import { useResultStore } from '../store/resultStore';
+import { useEffect } from 'react';
+import { useMainSocket } from '../store/socketIoStore';
+import { useNavigate } from 'react-router-dom';
+import useSocketStore from './useRoom';
+import { useResultStore } from '../store/resultStore';
+import { useFriend } from './useFriend';
 
-// export const useMatchmaking = () => {
-//     const { socket } = useMainSocket();
-//     const navigate = useNavigate();
-//     const { setPlayerColor } = useSocketStore();
-//     const { setMatchMaked } = useResultStore();
+export const useMatchmaking = () => {
+    const { socket } = useMainSocket();
+    const navigate = useNavigate();
+    const { setMatchMaked, setOpponentId } = useResultStore();
+    const { setRoom, setPlayerColor } = useSocketStore();
 
-//     const joinQueue = () => {
-//         socket.emit("joinQueue");
-//     };
+    const joinQueue = () => {
+        socket.emit("joinQueue");
+    };
 
-//     useEffect(() => {
-//         socket?.on("assignColor", (color) => {
-//             console.log("Assigned color:", color);
-//             setPlayerColor(color);
-//         });
+    useEffect(() => {
+        socket?.on("matchFound", ({ roomId, color, opponentId }) => {
+            console.log(`Matched! Room ID: ${roomId}, Your Color: ${color}, OpponentId: ${opponentId}`);
+            if(opponentId) setOpponentId(opponentId)
+            setPlayerColor(color);
+            setRoom(roomId);
+        });
 
-//         socket?.on("matchFound", ({ roomId, color }) => {
-//             console.log(`Matched! Room ID: ${roomId}, Your Color: ${color}`);
-//             setMatchMaked(true);
-//             navigate("/multiplayer");
-//         });
+        return () => {
+            socket.off("matchFound");
+        };
+    }, [socket]);
 
-//         return () => {
-//             socket.off("matchFound");
-//         };
-//     }, [socket]);
-
-//     return { joinQueue };
-// };
+    return { joinQueue };
+};

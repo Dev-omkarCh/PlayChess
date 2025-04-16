@@ -26,6 +26,14 @@ const ResultModel = () => {
   const {result, type, opponent, you} = useResultStore();
   const { saveGame } = useFriend();
   const { newRating, isRise, ratingCal } = calculateElo(you.elo,opponent.elo,result);
+  const { socket } = useMainSocket();
+
+  const clearGameData = () =>{
+    closeGameOverModal();
+    socket.emit("gameOver", room);
+    setNotation({you: [], opponent: []});
+  }
+
   useEffect(()=>{
     if(result === "win" || (result === "draw" && playerColor === "white" )){
       saveGame(Math.round(newRating), ratingCal);
@@ -33,18 +41,17 @@ const ResultModel = () => {
   },[])
 
     const handleNewGame = () => {
-      // const socket = useMainSocket.getState().socket;
-      // socket.emit("gameOver", room);
+      clearGameData();
       navigate("/menu");
     }
 
     const handleRematch = () => {
-       closeGameOverModal();
+       clearGameData();
       navigate("/leaderboard");
     }
 
     const handleClose = () => {
-      closeGameOverModal();
+      clearGameData();
       navigate("/menu");
     }
 

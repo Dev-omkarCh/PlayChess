@@ -7,6 +7,7 @@ import { useEffect } from "react";
 import { showCustomToast } from "../utils/CustomToast";
 import useChessStore from "../store/chessStore";
 import { useResultStore } from "../store/resultStore";
+import useSocketStore from "./useRoom";
 
 const useSocket = () => {
 
@@ -14,6 +15,7 @@ const useSocket = () => {
     const { socket, setSocket } = useMainSocket();
     const { onlineUsers, setOnlineUsers }  = useOnlineStore();
     const { setFriendRequests, friends, setFriends, setFriend, setFriendRequest, setRequest } = useFriendStore();
+    const { setRoom } = useSocketStore();
     const { setOpponentId } = useResultStore();
 
 
@@ -31,6 +33,10 @@ const useSocket = () => {
                 setOnlineUsers(users);
             });
 
+            socket.on("reloaded",(room)=>{
+                console.log("got Room Id",room);
+            })
+
             socket.on("hasfriendRequest",(data)=>{
                 setFriendRequest(data);
                 console.log(friends);
@@ -44,10 +50,6 @@ const useSocket = () => {
                 }
                 setFriendRequests(notification);
                 
-            });
-
-            socket.on("matchFound", ({ roomId, color }) => {
-                console.log(`Matched! Room ID: ${roomId}, Your Color: ${color}`);
             });
 
             socket.on("hasAccepted",({ newNotification, userId })=>{

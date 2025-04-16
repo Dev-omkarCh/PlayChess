@@ -39,11 +39,11 @@ const Button = ({ text, type, handleOnClick, className, disabled = false, noScal
 
   return (
     <button type={type ? type : "button"} onClick={handleOnClick}
-      className={` p-1 py-2 rounded-lg text-lg font-bold ${choosedColor.shadow}
+      className={` p-1 py-2  text-lg font-bold ${choosedColor.shadow}
         ${width ? width : "w-full"}
         active:translate-y-1 active:shadow-none transition-all duration-300 text-white
         transform ${disabled ? choosedColor.bgDisabled : `${choosedColor.bgColor} ${!noScale && "hover:scale-105"}`}
-        ${className}`}
+        ${className} rounded-[10px]`}
       >
       {text}
     </button>

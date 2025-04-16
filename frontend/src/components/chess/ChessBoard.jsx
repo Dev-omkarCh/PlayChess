@@ -7,12 +7,14 @@ import moveSound from "../../sounds/move.mp3";
 import ChessPiece from "./ChessPiece";
 import { fileLetters } from "../../utils/chesshelper.js";
 import PromotionModal from "./PromotionModal.jsx";
+import useSettingStore from "../../store/settingStore.js";
 
 
 const ChessBoard = () => {
   const { board, movePiece, selectPiece, suggestedMoves, selectedPiece, setSelectedPiece, setSuggestedMoves, turn } = useChessStore();
   const { playerColor } = useSocketStore();
   const { promotion } = useChessStore();
+  const { boardColor } = useSettingStore();
 
   // sound effect for moving pieces
   const audioRef = useRef(new Audio(moveSound));
@@ -64,7 +66,7 @@ const ChessBoard = () => {
               }}
               className={`max-w-18 max-h-18 flex items-center justify-center relative
                 ${squareName} 
-                ${(adjustedRowIndex + colIndex) % 2 === 0 ? "bg-[#edd6b0]" : "bg-[#b88762]"}
+                ${(adjustedRowIndex + colIndex) % 2 === 0 ? `${boardColor.white}` : `${boardColor.black}`}
                 ${isOver ? "bg-yellow-500" : ""}
                 ${isAbleToCapture ? "bg-red-500" : ""}
               `}

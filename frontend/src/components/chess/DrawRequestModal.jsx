@@ -3,6 +3,8 @@ import { useMainSocket } from "../../store/socketIoStore";
 import useChessStore from "../../store/chessStore";
 import useSocketStore from "../../store/socketStore";
 import { useResultStore } from "../../store/resultStore";
+import Button from "../Button";
+import { IoMdCheckmark, IoMdClose } from "react-icons/io";
 
 const DrawRequestModal = () => {
   const { drawRequest, closeDrawRequest, openGameOverModal } = useChessStore();
@@ -20,21 +22,15 @@ const DrawRequestModal = () => {
   };
 
   return (
-    <div className="w-[80%] h-fit bg-opacity-70 flex justify-center items-center">
-      <div className="bg-[#1e1e2e] text-white rounded-lg text-center w-96 p-2">
-        <h2 className="text-lg font-bold mb-4">Opponent Offered Draw</h2>
-        <button
-          onClick={acceptDraw}
-          className="bg-gray-500 text-black px-6 py-2 rounded-lg mr-4 hover:bg-gray-600 "
-        >
-          Accept
-        </button>
-        <button
-          onClick={closeDrawRequest}
-          className="bg-red-600 px-6 py-2 rounded-lg hover:bg-red-700"
-        >
-          Decline
-        </button>
+    <div className="w-[70%] h-fit bg-opacity-70 flex justify-center items-center">
+      <div className="bg-[#35465f] text-white rounded-lg text-center w-96 p-2 items-center flex justify-between px-4">
+        <h2 className="text-base font-bold">Wanna Draw?</h2>
+        <div className="flex gap-3">
+          <Button className={"w-fit h-fit"} color="green" text={<IoMdCheckmark className="text-lg"/>} handleOnClick={acceptDraw} />
+          <Button className={"w-fit h-fit"} color="red" text={<IoMdClose className="text-lg"/>} handleOnClick={closeDrawRequest} />
+        </div>
+        
+        
       </div>
     </div>
   );

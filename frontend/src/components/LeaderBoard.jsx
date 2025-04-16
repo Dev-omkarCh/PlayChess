@@ -7,12 +7,13 @@ import { IoArrowBack } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
 
 const Leaderboard = () => {
+  const navigate = useNavigate();
+  const {authUser} = useAuth();
+  const userId = authUser._id;
+  
   const [leaderboard, setLeaderboard] = useState([]);
   const [yourRank, setYourRank] = useState(null);
   const [yourElo, setYourElo] = useState(null);
-  const {authUser} = useAuth();
-  const userId = authUser._id;
-  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchLeaderboard = async () => {

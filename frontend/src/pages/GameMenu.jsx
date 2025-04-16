@@ -4,9 +4,11 @@ import { FaPlay, FaUserFriends } from "react-icons/fa";
 import { Tooltip } from "react-tooltip";
 import ChessImage from "../assets/chess.png";
 import useAuth from "../store/useAuth";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import useLogout from "../hooks/useLogout";
+import { MdLogout } from "react-icons/md";
+import useSettingStore from "../store/settingStore";
 // import useSocket from "../hooks/useSocket";
 
 export default function PlayMenu() {
@@ -29,25 +31,24 @@ export default function PlayMenu() {
   return (
     <div className="h-[100svh] w-[100svw] bg-gray-900 text-white flex flex-col md:flex-row gap-10 items-center justify-center relative px-6 md:px-16 lg:px-24">
       {/* Profile & Hamburger Menu */}
-      <div className="absolute top-5 left-5 flex items-center space-x-4">
-        <button onClick={handleSendToProfile}><FiUser className="text-3xl cursor-pointer hover:text-green-400 transition duration-300" /></button>
+      <div className="absolute top-5 left-5 flex items-center justify-between space-x-4 ">
         <button
           onClick={() => setMenuOpen(!menuOpen)}
           className="text-3xl focus:outline-none"
         >
           {menuOpen ? <FiX /> : <FiMenu />}
         </button>
+        <button onClick={handleSendToProfile}><FiUser className="text-3xl cursor-pointer hover:text-green-400 transition duration-300" /></button>
+        <button onClick={handleLogout} className="text-3xl cursor-pointer hover:text-red-400 transition duration-300"><MdLogout /></button>
       </div>
+     
 
       {/* Menu List */}
       {menuOpen && (
         <div className="absolute top-16 left-5 bg-gray-800 p-4 rounded-lg shadow-lg w-48">
-          <ul className="space-y-3">
-            <li className="hover:text-green-400 cursor-pointer">Profile</li>
-            <li className="hover:text-green-400 cursor-pointer">Settings</li>
-            <li className="hover:text-green-400 cursor-pointer">
-              <button onClick={handleLogout}>Logout</button>
-            </li>
+          <ul className="space-y-3 flex flex-col">
+            <Link to={"/leaderboard"} className="hover:text-green-400 cursor-pointer">Leaderboard</Link>
+            <Link to={"/settings"} className="hover:text-green-400 cursor-pointer">Settings</Link>
           </ul>
         </div>
       )}

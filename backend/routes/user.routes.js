@@ -3,7 +3,13 @@ import { searchByUserName, addFriend, acceptFriend, declineFreind,
     getFriendRequests, markAllNotificationsAsRead, getFriends, 
     sendGameRequest, acceptGameRequest, declineGameRequest, getGameRequests, getPlayer, 
     saveGameDetails, getBothPlayersDetails, getProfile, updateProfile, 
-    getAllUsers, getLeaderboard, markMessageAsRead
+    getAllUsers, getLeaderboard, markMessageAsRead,
+    saveGameStatusOnReLoad,
+    checkIfGameReloaded,
+    getChessAnalytics,
+    getAllUserss,
+    getAllNotifications,
+    getAllGameHistory
 } from "../controllers/user.controllers.js";
 import { protectedRoute } from "../middleware/protectedRoute.js";
 const router = express.Router();
@@ -32,6 +38,15 @@ router.get("/friends",protectedRoute,getFriends);
 router.put("/notifications/read",protectedRoute,markAllNotificationsAsRead);
 router.post("/notification/read/:id",protectedRoute,markMessageAsRead);
 router.get("/requests",protectedRoute,getFriendRequests);
+router.post("/game/reconnect",protectedRoute,saveGameStatusOnReLoad);
+router.get("/game/check",protectedRoute,checkIfGameReloaded);
+router.get("/game/check",protectedRoute,checkIfGameReloaded);
+
+router.get("/gameHistory",protectedRoute,getChessAnalytics);
+
+router.get("/all",protectedRoute,getAllUserss);
+router.get("/notifications",protectedRoute,getAllNotifications);
+router.get("/games",protectedRoute,getAllGameHistory);
 
 
 export default router;

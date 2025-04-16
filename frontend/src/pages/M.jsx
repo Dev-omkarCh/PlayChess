@@ -16,63 +16,20 @@ import DrawRequestModal from '../components/chess/DrawRequestModal';
 import { useResultStore } from '../store/resultStore';
 import { useFriend } from '../hooks/useFriend';
 import PlayerProfile from '../components/chess/PlayerProfile';
-import Button from '../components/Button';
+import Button from '@/components/Button';
 
-export default function ChessGamePage() {
+export default function MultiplayerDemo() {
 
   const { joinGame, isGameStarted, startGameListener } = useSocketStore();
   const { listenForMoves, promotion } = useChessStore();
   const { gameStatus } = useFriendStore();
   const { gameId } = useFriendStore();
-  const { gameOver, openGameOverModal, changeGameState } = useChessStore();
+  const { gameOver, openGameOverModal } = useChessStore();
   const { room } = useSocketStore();
-  const {setGameResult, you, opponent} = useResultStore();
+  const {setGameResult} = useResultStore();
   const { getBothPlayersDetails, checkIfGameIsReloaded } = useFriend();
 
-  //TODO : changed
   const { socket } = useMainSocket();
-  // const { socket } = useSocket(); 
-  // startGameListener();
-
-  const reconnect = () => {
-    if (document.visibilityState === "hidden" && !gameOver) {
-      socket.emit("reload", room);
-      // useChessStore.getState().reconnectGame();
-    }
-  }
-
-  useEffect(()=>{
-    // if(gameId){
-
-    if(gameOver){
-      document.removeEventListener("visibilitychange");
-      localStorage.removeItem("gameStatus");
-      if(socket){
-        socket.off("reload");
-      }
-    }
-    else {
-      // checkIfGameIsReloaded();
-      console.log(JSON.parse(localStorage.getItem("gameStatus")));
-      if(JSON.parse(localStorage.getItem("gameStatus"))){
-        
-      }
-    }
-      
-    // }
-    if(socket) {
-      console.log("no");
-      document.addEventListener("visibilitychange", reconnect);
-
-      getBothPlayersDetails();
-    }
-    return ()=>{
-      socket?.off("reload");
-      window.removeEventListener("visibilitychange", reconnect);
-    }
-  },[]);
-  
-  listenForMoves();
   
   const handleResign = () => {
     setGameResult("lose","resign");
@@ -115,7 +72,7 @@ export default function ChessGamePage() {
             <MoveHistory />
             <div className=" flex justify-center items-center gap-4 mt-4 flex-col mb-3">
               <div className='flex w-full items-center gap-3 justify-evenly'>
-                <Button text={"Draw"} handleOnClick={handleDraw} color='purple'  />
+                <Button text={"Draw"} handleOnClick={handleDraw} color='purple' />
                 <Button text={"Resign"} handleOnClick={handleResign} color='red' />
               </div>
               <DrawRequestModal />

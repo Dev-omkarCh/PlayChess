@@ -18,7 +18,7 @@ const MoveHistory = () => {
       index === notation[player].length - 1 && notation[player].length !== 0;
   
     return (
-      <div className="bg-[#1e1e2e] text-white p-4 rounded-lg h-[80%] w-80 shadow-lg">
+      <div className="bg-[#1e1e2e] text-white p-4 rounded-lg h-[90%] min-h-[80%] w-full shadow-lg">
         <h2 className="text-center text-lg font-semibold mb-3 tracking-wide">
           Move History
         </h2>

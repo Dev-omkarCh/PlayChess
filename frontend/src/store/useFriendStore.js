@@ -16,6 +16,10 @@ const useFriendStore = create((set) => ({
 
     gameRequests : [],
     users : [],
+
+    gameStatus : null,
+    setGameStatus : ( gameStatus ) => set({ gameStatus }),
+
     setUsers : ( users ) => set({ users }),
     gameId : "",
     user : null,

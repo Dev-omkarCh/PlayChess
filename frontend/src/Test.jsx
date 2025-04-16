@@ -59,7 +59,7 @@ const EditProfileModal = ({ isOpen, onClose, user }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+    <div className="fixed inset-0 bg-black bg-opacity-75 flex justify-center items-center z-50">
       <div className="bg-gray-800 text-white p-6 rounded-lg w-96 shadow-lg">
         <div className="flex justify-between items-center border-b border-gray-700 pb-2 mb-4">
           <h2 className="text-lg font-semibold">Edit Profile</h2>

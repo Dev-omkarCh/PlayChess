@@ -10,7 +10,7 @@ import useChessStore from "../store/chessStore";
 export const useFriend = () => {
 
     const { socket } = useMainSocket();
-    const { friendRequests, setFriendRequests, setGameRequests, friends, setFriends, setGameId, setUser, setHistory, setUsers,setFriend  } = useFriendStore();
+    const { friendRequests, setFriendRequests, setGameRequests, friends, setFriends, setGameId, setUser, setHistory, setUsers,setFriend, setGameStatus  } = useFriendStore();
     const { isGameStarted, startGameListener } = useSocketStore();
     const { joinGame } = useRoom();
     const { authUser } = useAuth();
@@ -18,23 +18,13 @@ export const useFriend = () => {
     const { notation } = useChessStore();
     const { playerColor, room } = useSocketStore();
 
-    const getFriendRequests = async () => {
-        const response = await fetch("/api/users/requests", {
-            method: "GET",
-            headers: { "Content-Type": "application/json" },
-        });
-        const data = await response.json();
-        console.log()
-        setFriendRequests(data);
-        return data;
-    };
-
+    
     const saveGame = async (newRating, ratingCal) =>{
-
+        
         const white = playerColor === "white" ? you._id : opponent._id;
         const black = playerColor === "black" ? you._id : opponent._id;
         const opponentColor = playerColor === "white" ? "black" : "white";
-
+        
         const won = [];
         const moves = { white : [], black : []};
         const roomId = room;
@@ -43,7 +33,7 @@ export const useFriend = () => {
             white: { before: 0, after: 0 },
             black: { before: 0, after: 0 },
         }
-
+        
         if(result === "win") won.push(playerColor);
         else if(result === "draw") { 
             won.push(playerColor);
@@ -55,10 +45,10 @@ export const useFriend = () => {
             moves.white.push(notation.you);
             moves.black.push(notation.opponent);
             // rating
-
+            
             rating.white.before = you.elo;
             rating.black.before = opponent.elo;
-
+            
             if(result === "draw") {
                 rating.white.after = you.elo;
                 rating.black.after = opponent.elo;
@@ -75,12 +65,12 @@ export const useFriend = () => {
             // notation
             moves.black.push(notation.you);
             moves.white.push(notation.opponent);
-
+            
             // rating
             // before
             rating.black.before = you.elo;
             rating.white.before = opponent.elo;
-
+            
             if(result === "draw") {
                 rating.black.after = you.elo;
                 rating.white.after = opponent.elo;
@@ -104,7 +94,18 @@ export const useFriend = () => {
         toast.success(data.msg);
         return data;
     }
-
+    
+    const getFriendRequests = async () => {
+        const response = await fetch("/api/users/requests", {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+        });
+        const data = await response.json();
+        console.log()
+        setFriendRequests(data);
+        return data;
+    };
+    
     const getGameRequests = async () => {
         const response = await fetch("/api/users/game/get", {
             method: "GET",
@@ -214,9 +215,9 @@ export const useFriend = () => {
     };
 
     const getBothPlayersDetails = async () =>{
-        if(matchMaked){
-            return;
-        }
+        // if(matchMaked){
+        //     return;
+        // }
         const response = await fetch(`/api/users/game/players/details/${opponentId}`, {
             method: "GET",
         });
@@ -281,7 +282,21 @@ export const useFriend = () => {
         toast.success(res.msg);
     }
 
-
+    const checkIfGameIsReloaded = async(roomId, playerColor)=>{
+        const data = await fetch(`/api/users/game/check/`, {
+            method: "GET",
+        });
+        const res = await data.json();
+        console.log("data :", res.gameStatus);
+        if(res.gameStatus){
+            localStorage.setItem("gameStatus", JSON.stringify(res.gameStatus));
+            // setGameStatus(res.gameStatus);
+            toast.success(res.msg);
+            return;
+        }
+        toast.success(res.msg);
+        return;
+    }
 
     return { initSocketListeners, 
         getFriendRequests, 
@@ -299,6 +314,7 @@ export const useFriend = () => {
         updateProfile,
         getAllUsres,
         markAllMessagesAsRead,
-        markMessageAsRead
+        markMessageAsRead,
+        checkIfGameIsReloaded,
     }
 }

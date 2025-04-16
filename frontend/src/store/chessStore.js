@@ -10,6 +10,8 @@ import useAuth from "./useAuth";
 import useFriendStore from "./useFriendStore";
 import { useFriend } from "../hooks/useFriend";
 import { useResultStore } from "./resultStore";
+import { useRoom } from "../hooks/useRoom";
+// import useSettingStore  from "../store/settingStore"
 // const { saveGame } = useFriend();
 
 const initialBoard = () => {
@@ -64,38 +66,45 @@ const useChessStore = create((set, get) => ({
   notation : { you: [], opponent: [] },
   setNotation : (notation) => set({ notation }),
 
-  // Changes
   result : null,
   type : null,
   openDummyModal: (result, type) => set({ result : result, type : type}),
 
-  // end
-
   gameOver: null, // "win", "lose", "resign"
   openGameOverModal: (result) => set({ gameOver: result }),
   closeGameOverModal: () => set({ gameOver: null }),
+
+  changeGameState : () => set((state)=>{
+    const status = JSON.parse(localStorage.getItem("gameStatus"));
+    console.log("In changeGameState: status", status)
+  }),
+
+  reconnectGame : () => set(async(state)=>{
+      const data = await fetch(`/api/users/game/reconnect`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ 
+          board: state.board, 
+          turn: state.turn, 
+          notations: state.notation, 
+          playerColor: useSocketStore.getState().playerColor,
+          capturedPieces: state.capturedPieces,
+          opponent: useResultStore.getState().opponent,
+          roomId : useSocketStore.getState().room
+        })
+      });
+      const res = await data.json();
+      toast.success(res.msg);
+      return;
+  }),
 
   openPromotionModal: (row, col) => {
     set(()=>({
       promotion: { row, col }, // Force new object reference
     }));
   },
-
-  // promotePawn: (newPiece) => {
-  //   set((state) => {
-  //     const { piece, fromRow, fromCol, toRow, toCol } = state.promotionPiece;
-  //     const newBoard = state.board.map((r) => [...r]);
-  
-  //     newBoard[toRow][toCol] = newPiece.toUpperCase();
-  //     newBoard[fromRow][fromCol] = "";
-  
-  //     return {
-  //       board: newBoard,
-  //       promotionPiece: null,
-  //       turn: state.turn === "white" ? "black" : "white",
-  //     };
-  //   });
-  // },
 
   promotePawn: (type) =>
     set((state) => {
@@ -104,7 +113,7 @@ const useChessStore = create((set, get) => ({
 
       newBoard[row][col] = { type, color: state.turn === "white" ? "white" : "black" };
       return { board: newBoard, promotion: null, turn: state.turn === "white" ? "black" : "white", };
-    }),
+  }),
 
   // Select a piece and calculate possible moves
   selectPiece: ( row, col) => set((state) => {
@@ -142,13 +151,14 @@ const useChessStore = create((set, get) => ({
       console.log("finalSuggestedMoves :",finalSuggestedMoves);
       
       return { selectedPiece: { row, col }, suggestedMoves: finalSuggestedMoves };
-    }),
-
-
+  }),
+  // Move Piece
   movePiece: (fromRow, fromCol, toRow, toCol, audioRef) => set((state) => {
     const playerColor = useSocketStore.getState().playerColor;
     const { board, turn } = state;
     const { socket, room } = useSocketStore.getState();
+
+    console.log(state.board);
 
     const piece = state.board[fromRow][fromCol];
     const target = state.board[toRow][toCol];
@@ -261,46 +271,14 @@ const useChessStore = create((set, get) => ({
       return { board: initialBoard(), turn: "white", selectedPiece: null, suggestedMoves: [] };
     }
 
-
-    audioRef.current.currentTime = 0;
-    audioRef.current.play();
+    // if(useSettingStore.getState().sound){
+      audioRef.current.currentTime = 0;
+      audioRef.current.play();
+    // }
 
     return { board: newBoard, turn: opponentColor, selectedPiece: null, suggestedMoves: [] };
   }),
-
-  // 1
-  // movePiece: (fromRow, fromCol, toRow, toCol, audioRef) => set((state) => {
-  //   const { board, turn } = state;
-  //   const { socket, room } = useSocketStore.getState();
-
-  //   const piece = board[fromRow][fromCol];
-  //   if (!piece || piece.color !== turn) {
-  //     toast.error("Invalid move: Not your turn!");
-  //     return state;
-  //   }
-
-  //   if (!isValidMove(piece, fromRow, fromCol, toRow, toCol, board)) {
-  //     toast.error("Invalid move!");
-  //     return state;
-  //   }
-
-  //   // Update board locally
-  //   const newBoard = board.map((r) => [...r]);
-  //   newBoard[toRow][toCol] = piece;
-  //   newBoard[fromRow][fromCol] = null;
-
-  //   // Emit move to the server
-  //   if (room) {
-  //     console.log("Emitting move:", { fromRow, fromCol, toRow, toCol, piece });
-  //     socket.emit("movePiece", { room, move: { from: { row: fromRow, col: fromCol }, to: { row: toRow, col: toCol }, piece } });
-  //   }
-
-  //   audioRef.current.currentTime = 0;
-  //   audioRef.current.play();
-
-  //   return { board: newBoard, turn: turn === "white" ? "black" : "white", selectedPiece: null, suggestedMoves: [] };
-  // }),
-
+  // listenFor Moves
   listenForMoves: () => {
     const socket = useMainSocket.getState().socket;
 

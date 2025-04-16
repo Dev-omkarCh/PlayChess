@@ -12,7 +12,6 @@ const NavBar = () => {
   const [ profileImg, setProfileImg ] = useState(authUser ? authUser.profileImg : "");
   const navigate = useNavigate();
 
-  console.log("hello")
   return (
     <nav className="bg-zinc-800 p-4 flex items-center justify-between shadow-lg ">
       <div className="flex items-center gap-4">
