@@ -2,9 +2,8 @@ import mongoose from "mongoose";
 const settingSchema = new mongoose.Schema({
 
     sound: {
-        type: String,
-        default: "on",
-        enum : ["on","off"]
+        type: Boolean,
+        default: true
     },
 
     boardColor : {
@@ -22,13 +21,18 @@ const settingSchema = new mongoose.Schema({
         }
     },
 
-    pieceType : {
-        name : {
-            type: String,
-            default: "classic",
-            emun: ["classic","wooden"]
-        },
+    pieceType : { 
+        type: String,
+        default: "classic",
+        emun: ["classic","wooden"]
+       
     },
+
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true
+    }
 
 });
 

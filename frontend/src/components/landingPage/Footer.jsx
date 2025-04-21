@@ -4,7 +4,7 @@ import { FaGithub, FaLinkedin, FaInstagram, FaTwitter, FaFacebook } from "react-
 
 const Footer = () => {
   return (
-    <footer className="bg-black text-white py-8 px-4">
+    <footer className="bg-primary text-white py-8 px-4 border-t-2 border-sectionBorder">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
         <div>
           <h2 className="text-lg font-semibold">Developer</h2>
@@ -50,7 +50,7 @@ const Footer = () => {
         </div>
       </div>
 
-      <div className="mt-8 text-center border-t border-gray-700 pt-4">
+      <div className="mt-8 text-center border-t border-sectionBorder pt-4">
         <p>©All Rights are Reserved 2025–2026</p>
       </div>
     </footer>

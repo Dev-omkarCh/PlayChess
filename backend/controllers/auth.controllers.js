@@ -1,6 +1,7 @@
 import bcryptJs from "bcryptjs";
 import User from "../models/user.model.js";
 import { generateToken } from "../utils/lib/generateToken.js";
+import Settings from "../models/setting.model.js";
 
 export const getUser = async( req, res) =>{
     try{
@@ -47,6 +48,11 @@ export const signup = async( req, res) =>{
         const newUser = new User({
             username, email, password: passwordHash, gender, profileImg : gender.toLowerCase() === "male" ? boyProfilePic : girlProfilePic
         });
+
+        const createSettings = new Settings({
+            userId: newUser._id,
+        });
+        await createSettings.save();
 
         if(newUser){
             generateToken(newUser._id, res);

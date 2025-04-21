@@ -16,63 +16,60 @@ import DrawRequestModal from '../components/chess/DrawRequestModal';
 import { useResultStore } from '../store/resultStore';
 import { useFriend } from '../hooks/useFriend';
 import PlayerProfile from '../components/chess/PlayerProfile';
-import Button from '@/components/Button';
+import Button from '../components/Button';
+import useSettingStore from '../store/settingStore';
 
-export default function MultiplayerDemo() {
+export default function ChessGamePage() {
 
   const { joinGame, isGameStarted, startGameListener } = useSocketStore();
   const { listenForMoves, promotion } = useChessStore();
   const { gameStatus } = useFriendStore();
   const { gameId } = useFriendStore();
-  const { gameOver, openGameOverModal } = useChessStore();
+  const { gameOver, openGameOverModal, changeGameState } = useChessStore();
   const { room } = useSocketStore();
-  const {setGameResult} = useResultStore();
+  const {setGameResult, you, opponent} = useResultStore();
   const { getBothPlayersDetails, checkIfGameIsReloaded } = useFriend();
+  const { getSettings } = useSettingStore();
 
   const { socket } = useMainSocket();
-  
+
   const handleResign = () => {
-    setGameResult("lose","resign");
-    openGameOverModal(true);
-    socket.emit("resign",room);
+    
   }
 
   const handleDraw = () => {
-     socket.emit("drawRequest",room);
+    
   }
+
+  useEffect(()=>{
+    getSettings();
+  },[])
 
   return (
     <>
       {gameOver && <ResultModel /> }
-      <div className="min-h-screen flex flex-col bg-gray-900 text-white">
-      <div className="md:hidden bg-gray-800 p-4 flex justify-between items-center">
-        <HiMenu size={24} />
-        <div className="text-2xl flex items-center gap-2">
-          <FaChess /> Chess.com
-        </div>
-        <div className="flex gap-4">
-          <MdOutlineSettings size={24} />
-          <IoChatbubbleOutline size={24} />
-        </div>
-      </div>
-
+      <div className="min-h-screen flex flex-col bg-primary text-white">
       <div className="flex flex-col md:flex-row flex-1">
 
-        <div className="flex-1 flex flex-col items-center justify-center p-2 relative bg-[#1e1e2e]">
-          <PlayerProfile />
-          <PlayerProfile posY='bottom-2' posX='right-5' you={true} />
-          <div className="aspect-square w-full sm:w-[400px] md:w-[500px] lg:w-[600px] max-w-[700px]">
+        <div className="w-full flex flex-col items-center justify-start p-2 relative bg-primary border-r border-sectionBorder">
+          <div className='player-section w-full h-[10%] flex justify-start items-center'>
+            <PlayerProfile username={opponent?.username} elo={opponent?.elo} />
+          </div>
+          <div className="aspect-square w-full sm:w-[400px] md:w-[500px] lg:w-[500px] max-w-[700px] flex-grow">
           {promotion && <PromotionModal />}
             <ChessBoard />
           </div>
+          <div className='player-section w-full h-[10%] flex justify-end items-center'>
+            <PlayerProfile username={you?.username} elo={you?.elo} you={true} />
+          </div>
         </div>
 
-        <div className="w-full md:w-1/4 bg-gray-800 p-4 flex flex-col gap-4 md:h-screen">
-          <div className='flex h-[100%] flex-col'>
+        <div className="w-full md:w-1/4 bg-secondary flex-grow p-4 flex flex-col gap-4 md:h-screen">
+          <div className='flex h-[100%] flex-col flex-grow'>
             <MoveHistory />
             <div className=" flex justify-center items-center gap-4 mt-4 flex-col mb-3">
               <div className='flex w-full items-center gap-3 justify-evenly'>
-                <Button text={"Draw"} handleOnClick={handleDraw} color='purple' />
+                <Button text={"Draw"} handleOnClick={handleDraw} color='purple'  />
                 <Button text={"Resign"} handleOnClick={handleResign} color='red' />
               </div>
               <DrawRequestModal />

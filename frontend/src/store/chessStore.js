@@ -11,8 +11,9 @@ import useFriendStore from "./useFriendStore";
 import { useFriend } from "../hooks/useFriend";
 import { useResultStore } from "./resultStore";
 import { useRoom } from "../hooks/useRoom";
-// import useSettingStore  from "../store/settingStore"
-// const { saveGame } = useFriend();
+import useSettingStore from "./settingStore";
+import { playChessSound } from "../utils/playChessSound";
+import { use } from "react";
 
 const initialBoard = () => {
   const emptyBoard = Array(8).fill(null).map(() => Array(8).fill(null));
@@ -45,11 +46,10 @@ const initialBoard = () => {
   return emptyBoard;
 };
 
-
-
 const useChessStore = create((set, get) => ({
 
   drawRequest: false,
+  soundPerMove: false,
   openDrawRequest: () => set({ drawRequest: true }),
   closeDrawRequest: () => set({ drawRequest: false }),
 
@@ -78,6 +78,17 @@ const useChessStore = create((set, get) => ({
     const status = JSON.parse(localStorage.getItem("gameStatus"));
     console.log("In changeGameState: status", status)
   }),
+
+  setGameState: ({ board, turn, notations, playerColor, roomId, white, black }) =>
+    set({
+      board,
+      turn,
+      notations,
+      // playerColor,
+      // roomId,
+      // whiteId: white,
+      // blackId: black,
+    }),
 
   reconnectGame : () => set(async(state)=>{
       const data = await fetch(`/api/users/game/reconnect`, {
@@ -213,6 +224,7 @@ const useChessStore = create((set, get) => ({
     
     
     if(isCapture){
+      playChessSound("capture");
       state.capturedPieces[player].push(target);
     }
     
@@ -257,13 +269,16 @@ const useChessStore = create((set, get) => ({
 
     // Check if the opponent's king is in check
     if (isKingInCheck(newBoard, opponentColor)) {
-      toast.error(`${opponentColor.charAt(0).toUpperCase() + opponentColor.slice(1)} is in Check!`);
+      playChessSound("check");
     }
     
     // Check for Checkmate
     if (isCheckmate(newBoard, opponentColor)) {
       
       // useSocketStore.getState().isGameStarted = false;
+
+      playChessSound("checkmate");
+
       useResultStore.getState().setGameResult("win","checkmate");
       useMainSocket.getState().socket.emit("isCheckmated", room);
       state.openGameOverModal(true);
@@ -271,11 +286,8 @@ const useChessStore = create((set, get) => ({
       return { board: initialBoard(), turn: "white", selectedPiece: null, suggestedMoves: [] };
     }
 
-    // if(useSettingStore.getState().sound){
-      audioRef.current.currentTime = 0;
-      audioRef.current.play();
-    // }
-
+    playChessSound("move");
+    
     return { board: newBoard, turn: opponentColor, selectedPiece: null, suggestedMoves: [] };
   }),
   // listenFor Moves

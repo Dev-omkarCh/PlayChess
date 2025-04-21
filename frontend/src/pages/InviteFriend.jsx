@@ -1,67 +1,80 @@
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import SearchedFriend from "../components/InvitePage/SearchedFriend";
 import SideBar from "../components/InvitePage/SideBar";
 import TopMenu from "../components/InvitePage/TopMenu";
 import Inbox from "../components/InvitePage/Inbox";
-
 import useSeachedUsers from "../store/searchStore";
 import useFriendStore from "../store/useFriendStore";
-import useSocket from "../hooks/useSocket";
 import { useFriend } from "../hooks/useFriend";
 import useSocketStore from "../store/socketStore";
-import { useNavigate } from "react-router-dom";
 import { useMainSocket } from "../store/socketIoStore";
-import Toast from "../components/MyToast";
+import { useResponsiveStore } from "../store/responsiveStore";
 
-// #222832
-// #1c2028
-// #181d27
 
 export default function FriendsSidebar() {
-  // useSocket();
 
-  const { getFriendRequests, getFriends ,getGameRequests, getAllUsres } = useFriend();
+  const { getFriendRequests, getFriends, getGameRequests, getAllUsres } = useFriend();
   const { startGameListener } = useSocketStore();
   const { searchUsers } = useSeachedUsers();
   const { friends, friendRequests, users } = useFriendStore();
-  const {socket} = useMainSocket()
+  const { socket } = useMainSocket()
+  const { width, setWidth } = useResponsiveStore();
+  const { WIDTH } = useResponsiveStore();
+  const [isOpen, setIsOpen] = useState(true);
 
   startGameListener();
-  
+
+  const handleResize = () => {
+    if(width > 700  && !isOpen){
+      console.log("yes")
+      setIsOpen(true);
+    }
+    setWidth(window.innerWidth);
+  };
+
   useEffect(() => {
     getFriendRequests();
     getGameRequests();
     getFriends();
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+
     // getAllUsres()
   }, []);
-  
-  // end
+
 
   return (
-    <div className="h-[100dvh] w-[100dvw] flex ">
-      <SideBar />
-      <div className="h-full w-[80%] flex flex-col">
-        <TopMenu />
-        <div className="h-[80%] w-full grid grid-cols-2 place-content-start p-10 gap-5 overflow-y-auto dark-scrollbar">
-          
+    <div className="h-[100dvh] w-[100dvw] flex bg-primary">
+
+      {
+         <SideBar width={width} isOpen={isOpen} setIsOpen={setIsOpen} />
+      }
+      
+      <div className={`h-full ${width < WIDTH ? "w-full" : "w-[80%]"} flex flex-col`}>
+        <TopMenu width={width} setIsOpen={setIsOpen} />
+        <div className={`h-[80%] grid ${width < WIDTH ? "grid-cols-1" : "grid-cols-2"} w-full place-items-center items-center place-content-start p-10 gap-5 overflow-y-auto dark-scrollbar`}>
+
           {
-            searchUsers.map((user) =>(
-              <SearchedFriend key={user._id} user={user}  />
+            searchUsers.map((user) => (
+              <SearchedFriend key={user._id} user={user} width={width} />
             ))
           }
           {
             searchUsers.length === 0 &&
-            users.map((user)=>(
-              <SearchedFriend key={user._id} user={user}  />
+            users.map((user) => (
+              <SearchedFriend key={user._id} user={user} />
             ))
           }
-          
+
           <Inbox />
         </div>
         {/* //TODO: add button Invite by link */}
       </div>
-        
+
     </div>
   );
 }

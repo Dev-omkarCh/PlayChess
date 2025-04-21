@@ -13,35 +13,30 @@ import Profile from './pages/Profile.jsx';
 import Dashboard from './pages/DashBoard.jsx';
 import ChessGame from './components/chess/ChessGame.jsx';
 
-import FriendRequest from './components/gameMenu/FriendRequest.jsx';
 import MultiplayerGame from './pages/MultiplayerGame.jsx';
 import useAuth from './store/useAuth.js';
 
 import NotFound from './pages/NotFound.jsx';
 import InviteFriend from './pages/InviteFriend.jsx';
-import Inbox from './components/InvitePage/Inbox.jsx';
 import ChessHomepage from './Test.jsx';
+
 import useSocket from './hooks/useSocket.js';
 import LeaderBoard from './components/LeaderBoard.jsx';
-import Toast from './components/MyToast.jsx';
 import useFriendStore from './store/useFriendStore.js';
 import MatchMaking from './components/MatchMaking.jsx';
+
 import SettingsModal from './components/Settings.jsx';
 import MultiplayerDemo from './pages/M.jsx';
 import GameAnalytics from './pages/GameAnalytics.jsx';
-// import { useOnlineStatus } from './hooks/useOnlineStatus.js';
-// import useOnlineStatus from './hooks/useOnlineStatus.js';
+import useAdmin from './store/useAdmin.js';
+
 
 const App = () => {
 
-  // const isOnline = useOnlineStatus();
-
   const { authUser } = useAuth();
-  const { request } = useFriendStore();
+  const { isAdmin } = useAdmin();
   useSocket();
-  // changes : Online status
-  // useOnlineStatus(authUser?._id);
-
+  
   return (
     <>
     <Routes>
@@ -62,7 +57,7 @@ const App = () => {
         <Route path="/settings" element={<SettingsModal />} />
         <Route path='/test' element={<ChessHomepage />} />
         <Route path='/design' element={<MultiplayerDemo />} />
-        <Route path='/gg' element={authUser? <GameAnalytics /> : <Navigate to={"/login"}/>} />
+        <Route path='/admin' element={authUser && isAdmin ? <GameAnalytics /> : <Navigate to={"/login"}/>} />
         
     </Routes>
   
@@ -78,7 +73,7 @@ const App = () => {
       }}
     />
 
-    {request && <Toast />}
+    {/* {request && <Toast />} */}
     </>
   );
 };

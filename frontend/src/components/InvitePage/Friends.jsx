@@ -19,7 +19,7 @@ const Friends = ({ friend }) => {
 
   return (
     <div
-      className={`flex items-center justify-between p-3 w-[90%] rounded-lg ${friend.status === "online" ? "bg-[#42444b]" : "bg-[#37393F]"}`}
+      className={`flex items-center justify-between p-3 min-w-fit shrink w-[90%] ${isOnline ? "bg-[#3b3a38]" : "bg-[#31302e]"} rounded-new border border-sectionBorder`}
     >
       <div className="flex items-center space-x-3 relative">
         <div className={` w-12 h-12 rounded-full overflow-hidden ${getRandomColor()} flex items-center justify-center`}>
@@ -36,13 +36,13 @@ const Friends = ({ friend }) => {
         </div>
         <div>
           <p className="text-sm font-medium">{friend.username}</p>
-          <p className="text-xs text-gray-400">{isOnline ? "online" : "offline"}</p>
+          <p className={`text-xs ${isOnline ? "text-gray-400" : "text-gray-500"} `}>{isOnline ? "online" : "offline"}</p>
         </div>
       </div>
-      <button className={`p-2 bg-gray-600 rounded-full ${isOnline ? "hover:bg-gray-500" : ""} transition`} 
+      <button className={`p-2 bg-[#3b3b39] rounded-full ${isOnline ? "bg-[#535353] hover:bg-[#676767] cursor-pointer" : ""} transition-all duration-300 cursor-auto`} 
       onClick={() => handleSendGameRequest()}
       >
-        <FaPlus className={` text-sm ${isOnline? "text-white" : "text-gray-400"}`} />
+        <FaPlus className={` text-sm ${isOnline? "text-white" : "text-[#70747c]"}`} />
       </button>
     </div>
   )

@@ -32,7 +32,7 @@ const AdminDashboard = () => {
     fetchData();
   }, []);
 
-  // 📌 **ELO Distribution**
+  //  **ELO Distribution**
   const eloData = [
     { range: "400-800", count: users.filter((u) => u.elo >= 400 && u.elo < 800).length },
     { range: "800-1200", count: users.filter((u) => u.elo >= 800 && u.elo < 1200).length },
@@ -40,24 +40,24 @@ const AdminDashboard = () => {
     { range: "1600+", count: users.filter((u) => u.elo >= 1600).length },
   ];
 
-  // 📌 **Game Outcomes**
+  //  **Game Outcomes**
   const outcomeData = [
     { type: "Checkmate", count: gameHistory.filter((g) => g.type === "checkmate").length },
     { type: "Resign", count: gameHistory.filter((g) => g.type === "resign").length },
     { type: "Draw", count: gameHistory.filter((g) => g.type === "draw").length },
   ];
 
-  // 📌 **Win Rate by Color**
+  // **Win Rate by Color**
   const winRateData = [
     { color: "White Wins", count: gameHistory.filter((g) => g.won.includes("white")).length },
     { color: "Black Wins", count: gameHistory.filter((g) => g.won.includes("black")).length },
     { color: "Draws", count: gameHistory.filter((g) => g.won.length === 2).length },
   ];
 
-  // 📌 **Top Rated Players**
+  //  **Top Rated Players**
   const topPlayers = [...users].sort((a, b) => b.elo - a.elo).slice(0, 5);
 
-  // 📌 **Player Performance**
+  //  **Player Performance**
   const performanceData = users.map((user) => ({
     username: user.username,
     win: user.rapid.win,
@@ -65,7 +65,7 @@ const AdminDashboard = () => {
     draw: user.rapid.draw,
   }));
 
-  // 📌 **Game Activity by Time (Dynamically Generated from gameHistory)**
+  //  **Game Activity by Time (Dynamically Generated from gameHistory)**
   const timeSlots = ["12am-4am", "4am-8am", "8am-12pm", "12pm-4pm", "4pm-8pm", "8pm-12am"];
   const gameActivityData = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => {
     const dayData = gameHistory.filter((game) => {
@@ -79,7 +79,7 @@ const AdminDashboard = () => {
     };
   });
 
-  // 📌 **Download Dashboard as PDF**
+  // **Download Dashboard as PDF**
   const downloadDashboardPDF = () => {
     const pdf = new jsPDF("p", "mm", "a4");
     html2canvas(dashboardRef.current).then((canvas) => {
@@ -90,7 +90,7 @@ const AdminDashboard = () => {
   };
 
   return (
-        <div className="bg-gray-800 p-4 rounded-lg shadow-lg">
+        <div className="bg-secondary p-4 rounded-lg shadow-lg">
           <h2 className="text-xl font-semibold mb-3">Game Activity by Time</h2>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={gameActivityData}>
@@ -106,7 +106,7 @@ const AdminDashboard = () => {
               <Line type="monotone" dataKey="8pm-12am" stroke="#ffff00" />
             </LineChart>
           </ResponsiveContainer>
-          <button className="mt-3 p-3 hover:text-gray-300 rounded transition-all duration-300 ease-in-out text-white bg-[#293749]" onClick={downloadDashboardPDF}>
+          <button className="mt-3 p-3 hover:bg-secondaryVaraintHover bg-secondaryVaraint rounded transition-all duration-300 ease-in-out text-white " onClick={downloadDashboardPDF}>
             Download Chart
           </button>
         </div>

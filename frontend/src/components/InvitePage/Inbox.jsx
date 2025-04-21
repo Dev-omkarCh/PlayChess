@@ -5,12 +5,15 @@ import { IoClose } from "react-icons/io5";
 import useFriendStore from "../../store/useFriendStore";
 import toast from "react-hot-toast";
 import { useFriend } from "../../hooks/useFriend";
+import { useResponsiveStore } from "../../store/responsiveStore";
 
 const InboxModal = ({ isOpen, onClose, messages, setMessages }) => {
 
   const modalRef = useRef(null);
   const { markAllMessagesAsRead, markMessageAsRead } = useFriend();
   const [ read, setRead ] = useState(false);
+  const { width, setWidth } = useResponsiveStore();
+  const { WIDTH } = useResponsiveStore();
 
   const markAllAsRead = () => {
     markAllMessagesAsRead();
@@ -49,10 +52,10 @@ const InboxModal = ({ isOpen, onClose, messages, setMessages }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-[100]">
-      <div ref={modalRef} className="bg-gray-800 w-96 p-4 rounded-lg shadow-lg relative animate-slide-in">
+      <div ref={modalRef} className={`bg-secondary p-4 ${isOpen && width < WIDTH ? "w-[90%]" : ""} rounded-lg shadow-lg relative animate-slide-in border border-sectionBorder`}>
         <button className="absolute top-2 right-2 text-white hover:text-red-500 transition" onClick={onClose}><IoClose className="text-xl font-extrabold" /></button>
         <h2 className="text-lg font-bold text-white mb-4">Inbox</h2>
-        <button className="text-white bg-gray-600 px-3 py-1 rounded mb-3 hover:bg-gray-700 transition" onClick={markAllAsRead}>
+        <button className="text-white bg-secondaryVaraint px-3 py-1 rounded mb-3 hover:bg-[#383838] transition" onClick={markAllAsRead}>
           ✓ Mark all as read
         </button>
         
@@ -65,8 +68,8 @@ const InboxModal = ({ isOpen, onClose, messages, setMessages }) => {
               <div
               onDoubleClick={()=> handleMessageRead(msg?._id) }
                 key={msg._id}
-                className={`p-3 rounded-lg cursor-pointer transition-all duration-300 flex justify-between items-center border-l-4 ${
-                  msg.isRead ? "border-transparent bg-gray-700" : "border-blue-500 bg-gray-500 hover:bg-gray-600"
+                className={`p-3 rounded-lg cursor-pointer transition-all duration-300 flex justify-between items-center ${
+                  msg.isRead ? "border border-sectionBorder bg-[#282623]" : "border-l-4 border-blue-500 bg-secondaryVaraint hover:bg-secondaryVaraintHover"
                 }`}
               >
                 <div>
@@ -107,7 +110,7 @@ const Inbox = () => {
     <>
       {/* Floating Inbox Button */}
       <button 
-        className="fixed bottom-6 right-6 bg-gray-800 text-white p-3 rounded-full shadow-lg hover:bg-gray-700 transition"
+        className="fixed bottom-6 right-6 text-white p-3 rounded-full shadow-lg bg-secondaryVaraint hover:bg-[#454545] transition-all duration-300 border border-sectionBorder"
         onClick={() => setIsOpen(true)}
       >
         <FaEnvelope size={24} />

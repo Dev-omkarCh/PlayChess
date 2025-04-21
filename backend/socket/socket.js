@@ -70,6 +70,12 @@ io.on("connection", (socket) => {
     }
   });
 
+  socket.on("joinGameAgain",(roomId)=>{
+    console.log("roomId : "+roomId);
+    if(!roomId ) return console.log("In joinGameAgain > socket.js error");
+     socket.join(roomId);
+  })
+
   socket.on("reload", (room) => {
     console.log(room);
    io.emit("reloaded", room)
@@ -81,9 +87,8 @@ io.on("connection", (socket) => {
   });
 
   socket.on("resign", (room) => {
-    
+    console.log("yes", room);
     if(gameRooms[room]){
-      console.log("yes");
       socket.broadcast.to(room).emit("resigned", room);
     }
   })
@@ -148,11 +153,14 @@ io.on("connection", (socket) => {
 
     delete userSocketMap[userId];
     delete userIdMap[socket.id];
-    socket.emit("online_users", Object.keys(userSocketMap)); // Notify others
+    io.emit("online_users", Object.keys(userSocketMap)); // Notify others
     
     for (const room in gameRooms) {
-      gameRooms[room] = gameRooms[room].filter((id) => id !== socket.id);
-      if (gameRooms[room].length === 0) delete gameRooms[room];
+      if(gameRooms[room]){
+        gameRooms[room] = gameRooms[room].filter((id) => id !== socket.id);
+        if (gameRooms[room].length === 0) delete gameRooms[room];
+      }
+      
     }
     console.log("Player disconnected:", socket.id);
     console.log("disconnection",userSocketMap)
@@ -173,6 +181,8 @@ function checkForMatch() {
       if (socket1 && socket2) {
         socket1.join(roomId);
         socket2.join(roomId);
+
+        gameRooms[roomId] = [socket1,socket2];
 
         io.to(player1).emit("matchFound", { roomId, color: "white", opponentId: userIdMap[player2] });
         io.to(player2).emit("matchFound", { roomId, color: "black", opponentId: userIdMap[player1] });

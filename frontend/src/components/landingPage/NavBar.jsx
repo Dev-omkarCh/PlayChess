@@ -13,7 +13,7 @@ const NavBar = () => {
   const navigate = useNavigate();
 
   return (
-    <nav className="bg-zinc-800 p-4 flex items-center justify-between shadow-lg ">
+    <nav className="bg-secondary p-4 flex items-center justify-between shadow-lg border-b-2 border-sectionBorder">
       <div className="flex items-center gap-4">
         <FaChessKnight className="text-[#6CA72E] text-2xl" />
         <h1 className="text-white font-semibold text-lg">ChessNerds</h1>

@@ -6,12 +6,15 @@ import html2canvas from "html2canvas";
 import ChessAnalyticsDashboard from "./Dashboard";
 import TopRatedPlayers from "../components/dashboard/TopRatedPlayers";
 import GenderRatioChart from "../components/dashboard/GenderDistribution";
+import { useNavigate } from 'react-router-dom';
+import { IoMdArrowRoundBack } from "react-icons/io";
 
 const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
   const [gameHistory, setGameHistory] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const dashboardRef = useRef(null);
+  const navigate = useNavigate()
 
   // Fetch data from API
   useEffect(() => {
@@ -86,13 +89,17 @@ const AdminDashboard = () => {
   };
 
   return (
-    <div ref={dashboardRef} className="p-6 min-h-screen bg-[#111827]">
-      <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
+    <div ref={dashboardRef} className="p-6 min-h-screen bg-primary text-white">
+      
+      <h1 className="text-3xl font-bold mb-6 flex gap-3">
+        <button onClick={()=> navigate("/menu")}><IoMdArrowRoundBack /></button>
+        Admin Dashboard
+      </h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* ELO Distribution */}
         <ChessAnalyticsDashboard />
-        <div id="eloChart" className="bg-[#1f2937] p-4 rounded-lg shadow-lg">
+        <div id="eloChart" className="bg-secondary p-4 rounded-lg shadow-lg">
           <h2 className="text-xl font-semibold mb-3">ELO Distribution</h2>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={eloData}>
@@ -103,11 +110,11 @@ const AdminDashboard = () => {
               <Bar dataKey="count" fill="#8884d8" />
             </BarChart>
           </ResponsiveContainer>
-          <button className="mt-3 p-3 hover:text-gray-300 rounded transition-all duration-300 ease-in-out text-white bg-[#293749] " onClick={() => downloadChartAsImage("eloChart")}>Download Chart</button>
+          <button className="mt-3 p-3 hover:bg-secondaryVaraintHover bg-secondaryVaraint rounded transition-all duration-300 ease-in-out text-white " onClick={() => downloadChartAsImage("eloChart")}>Download Chart</button>
         </div>
 
         {/* Game Outcomes Distribution */}
-          <div id="gameOutcomeChart" className="bg-[#1f2937] p-4 rounded-lg shadow-lg">
+          <div id="gameOutcomeChart" className="bg-secondary p-4 rounded-lg shadow-lg">
             <h2 className="text-xl font-semibold mb-3">Game Outcomes</h2>
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
@@ -126,11 +133,11 @@ const AdminDashboard = () => {
                 <Legend />
               </PieChart>
             </ResponsiveContainer>
-            <button className="mt-3 p-3 hover:text-gray-300 rounded transition-all duration-300 ease-in-out text-white bg-[#293749]" onClick={() => downloadChartAsImage("gameOutcomeChart")}>Download Chart</button>
+            <button className="mt-3 p-3 hover:bg-secondaryVaraintHover bg-secondaryVaraint rounded transition-all duration-300 ease-in-out text-white" onClick={() => downloadChartAsImage("gameOutcomeChart")}>Download Chart</button>
           </div>
 
           {/* Win Rate by Color */}
-        <div id="winRateChart" className="bg-[#1f2937] p-4 rounded-lg shadow-lg">
+        <div id="winRateChart" className="bg-secondary p-4 rounded-lg shadow-lg">
           <h2 className="text-xl font-semibold mb-3">Win Rate by Color</h2>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={winRateData}>
@@ -141,11 +148,11 @@ const AdminDashboard = () => {
               <Bar dataKey="count" fill="#ff7300" />
             </BarChart>
           </ResponsiveContainer>
-          <button className="mt-3 p-3 hover:text-gray-300 rounded transition-all duration-300 ease-in-out text-white bg-[#293749]" onClick={() => downloadChartAsImage("winRateChart")}>Download Chart</button>
+          <button className="mt-3 p-3 hover:bg-secondaryVaraintHover bg-secondaryVaraint rounded transition-all duration-300 ease-in-out text-white" onClick={() => downloadChartAsImage("winRateChart")}>Download Chart</button>
         </div>
 
         {/* Notification Statistics */}
-        <div id="notificationChart" className="bg-[#1f2937] p-4 rounded-lg shadow-lg">
+        <div id="notificationChart" className="bg-secondary p-4 rounded-lg shadow-lg">
           <h2 className="text-xl font-semibold mb-3">Notification Statistics</h2>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={notificationData}>
@@ -156,11 +163,11 @@ const AdminDashboard = () => {
               <Line type="monotone" dataKey="count" stroke="#8884d8" />
             </LineChart>
           </ResponsiveContainer>
-          <button className="mt-3 p-3 hover:text-gray-300 rounded transition-all duration-300 ease-in-out text-white bg-[#293749]" onClick={() => downloadChartAsImage("notificationChart")}>Download Chart</button>
+          <button className="mt-3 p-3 hover:bg-secondaryVaraintHover bg-secondaryVaraint rounded transition-all duration-300 ease-in-out text-white " onClick={() => downloadChartAsImage("notificationChart")}>Download Chart</button>
         </div>
 
         <TopRatedPlayers data={users} />
-        <GenderRatioChart users={users} />
+        <GenderRatioChart users={users} download={downloadChartAsImage} />
 
       </div>
 

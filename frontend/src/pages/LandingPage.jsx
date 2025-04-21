@@ -6,7 +6,6 @@ const LandingPage = () => {
   return (
     <div className='h-dvh w-dvw'>
       <NavBar />
-      <NavBar />
       <Hero />
       <Footer />
     </div>

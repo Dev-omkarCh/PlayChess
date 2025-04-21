@@ -21,6 +21,10 @@ const useSocketStore = create((set) => ({
     });
   },
 
+  getPlayerColor : (color) =>{
+    
+  },
+
   startGameListener: () => {
 
     const socket = useMainSocket.getState().socket;

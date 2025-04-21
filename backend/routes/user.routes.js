@@ -9,7 +9,12 @@ import { searchByUserName, addFriend, acceptFriend, declineFreind,
     getChessAnalytics,
     getAllUserss,
     getAllNotifications,
-    getAllGameHistory
+    getAllGameHistory,
+    changeSettings,
+    getSettings,
+    saveStatus,
+    loadStatus,
+    checkAdminStatus
 } from "../controllers/user.controllers.js";
 import { protectedRoute } from "../middleware/protectedRoute.js";
 const router = express.Router();
@@ -47,6 +52,12 @@ router.get("/gameHistory",protectedRoute,getChessAnalytics);
 router.get("/all",protectedRoute,getAllUserss);
 router.get("/notifications",protectedRoute,getAllNotifications);
 router.get("/games",protectedRoute,getAllGameHistory);
+router.get("/settings",protectedRoute,getSettings);
+router.post("/settings/change",protectedRoute,changeSettings);
+
+router.post("/game/save-status",protectedRoute,saveStatus);
+router.post("/game/load-status/:roomId",protectedRoute,loadStatus);
+router.get("/admin",protectedRoute,checkAdminStatus);
 
 
 export default router;

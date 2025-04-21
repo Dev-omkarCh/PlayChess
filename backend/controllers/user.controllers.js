@@ -4,6 +4,7 @@ import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import { isInRoom } from "../socket/socket.js";
 import GameStatus from "../models/gameStatus.model.js";
+import Settings from "../models/setting.model.js";
 
 export const searchByUserName = async(req, res) =>{
     try {
@@ -440,9 +441,9 @@ export const getProfile = async(req,res) =>{
             ]
         }).sort({ createdAt: -1 }).limit(10);
 
-        if (!gameHistory.length) {
-            return res.status(404).json([]);
-        }
+        // if (!gameHistory.length) {
+        //     return res.status(404).json([]);
+        // }
 
         res.status(200).json({
             msg: "Game history fetched successfully.",
@@ -760,3 +761,103 @@ export const getAllGameHistory = async (req, res) => {
     }
 }
 
+export const changeSettings = async(req,res) =>{
+    try {
+        const { sound, pieceType, boardColor } = req.body;
+        const userId = req.user._id;
+        // const user = await User.findById(userId);
+
+        // if(!user) return res.status(400).json({ msg: "No such user exists" });
+
+        const userSetting = await Settings.findOne({ userId });
+        if(!userSetting) return res.status(400).json({ msg: "No such settings exists" });
+
+        if(!sound && !pieceType && !boardColor){
+            return res.status(400).json({ msg: "Please Change atleast one setting" });
+        }
+
+        if(userSetting.sound !== sound) userSetting.sound = sound;
+        if(userSetting.pieceType !== pieceType) userSetting.pieceType = pieceType;
+
+        if(userSetting.boardColor.name !== boardColor.name) {
+            userSetting.boardColor.name = boardColor.name;
+            userSetting.boardColor.blackTile = boardColor.blackTile;
+            userSetting.boardColor.whiteTile = boardColor.whiteTile;
+        }
+
+        await userSetting.save();
+        res.json({ message: "Settings Updated Successfully" });
+    } 
+    catch (e) {
+        console.log("Error in changeSettings Controller", e.message);
+        res.status(500).json({ error: "Internal Server Error" });
+        
+    }
+}
+
+export const getSettings = async(req,res) =>{
+    try {
+        
+        const userId = req.user._id;
+        const userSetting = await Settings.findOne({ userId });
+        if (!userSetting) return res.status(404).json({ msg: "Settings not found" });
+        
+        res.status(200).json(userSetting);
+
+    } catch (error) {
+        
+        console.error("Error getSettings controller:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+}
+
+export const saveStatus = async (req, res) => {
+    try {
+      const { roomId, board, turn, notations, playerColor, white, black } = req.body;
+  
+      await GameStatus.findOneAndUpdate(
+        { roomId, playerColor },
+        { board, turn, notations, white, black },
+        { upsert: true }
+      );
+
+      console.log("status saved");
+  
+      res.status(200).json({ message: "Game status saved" });
+    } catch (err) {
+      res.status(500).json({ error: "Save failed", err });
+    }
+  };
+
+// Load game status
+export const loadStatus = async (req, res) => {
+    try {
+      const { playerColor } = req.body;
+      const status = await GameStatus.findOne({ roomId: req.params.roomId, playerColor });
+      if (!status) return res.status(404).json({ error: "No saved game found" });
+
+      console.log("Load status successful")
+  
+      res.status(200).json(status);
+    } catch (err) {
+      res.status(500).json({ error: "Load failed", err });
+    }
+};
+
+export const checkAdminStatus = async (req, res) => {
+    try {
+      const id = req.user._id;
+      const user = await User.findOne({ _id: id });
+      if(!user) return res.status(400).json({ error: "Invalid Credentails"});
+    
+      console.log(user)
+      if(user.username === "Admin"){
+        console.log("yes")
+        return res.status(200).json({ isAdmin : true });
+      }
+      return res.status(200).json({isAdmin : false });
+
+    } catch (err) {
+      res.status(500).json({ error: "Error in checkAdminStatus Controller", err });
+    }
+};

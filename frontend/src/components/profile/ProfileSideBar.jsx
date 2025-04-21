@@ -21,7 +21,7 @@ const ProfileSideBar = () => {
 
   const Card = ({ name, value, icon, span }) => {
      return (
-      <div className={`bg-[#313338] p-4 rounded flex justify-center items-center cursor-pointer gap-3 hover:scale-105 flex-col hover:bg-[#3d3e44] transition-all duration-300 ease-in-out ${span && `col-span-2 `}`}>
+      <div className={`bg-secondary p-4 rounded border border-sectionBorder flex justify-center items-center cursor-pointer gap-3 hover:scale-105 flex-col hover:bg-secondaryVaraint transition-all duration-300 ease-in-out ${span && `col-span-2 `}`}>
         <p className=" text-gray-400 text-sm font-medium">{name}</p>
         <p className='hover:scale-110 transition-all duration-300 ease-in-out'>{icon}</p>
         <p className="text-lg font-semibold myfont">{value}</p>
@@ -31,13 +31,14 @@ const ProfileSideBar = () => {
 
   const winRate = () => {
      const totalValue = history?.length;
+     if(totalValue === 0) return 0;
      const value = user?.rapid?.win;
      const rate = (value / totalValue) * 100;
      return rate.toFixed(2);
   }
 
   return (
-      <div className="w-1/4 h-full p-5 overflow-y-hidden bg-[#1e1f22]">
+      <div className="w-1/4 h-full p-5 overflow-y-hidden bg-primary">
         <button className="text-3xl" onClick={()=> navigate("/menu")}><IoArrowBack /></button>
          <Test 
               isOpen={isOpen} 
@@ -46,7 +47,7 @@ const ProfileSideBar = () => {
                />
               {/*  */}
               <div className="flex justify-center items-center gap-5">
-                <div className={`h-fit w-fit ml-5 rounded-full mb-4 ${getRandomColor()}`}>
+                <div className={`h-fit w-fit ml-5 rounded-full mb-4 ${getRandomColor()} border-4 border-sectionBorder`}>
                   {user?.profileImg && <img className='h-32 w-32 rounded-full' src={user?.profileImg} />}  
                 </div>
                 <div>
@@ -66,7 +67,7 @@ const ProfileSideBar = () => {
                 <Card name={"Lose"} value={user?.rapid?.lose} icon={<MdElectricBolt className='text-red-500 text-2xl' />} />
                 <Card name={"Draw"} value={user?.rapid?.draw} icon={<SiChessdotcom className='text-gray-500 text-2xl' />} />
                 <Card name={"Win Rate"} value={Math.round(winRate())+"%"} icon={<FaChartPie className='text-blue-500 text-3xl' />} span={3} />
-                <button className="bg-[#313338] p-4 rounded col-span-3 hover flex flex-col hover:scale-105 transition-all duration-300 ease-in-out"
+                <button className="bg-secondary border border-sectionBorder hover:bg-secondaryVaraint p-4 rounded col-span-3 hover flex flex-col hover:scale-105 transition-all duration-300 ease-in-out"
                 onClick={()=> navigate("/leaderboard")}>
                   <div className='flex gap-3 justify-center'>
                     <h3 className="font-semibold text-lg ">LeaderBoard</h3>

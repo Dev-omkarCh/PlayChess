@@ -10,6 +10,7 @@ import { IoMdClose } from "react-icons/io";
 import { useFriend } from "../../hooks/useFriend.js";
 import { useOnlineStore } from "../../store/onlineStore.js";
 import toast from "react-hot-toast";
+import { useResponsiveStore } from "../../store/responsiveStore.js";
 
 const InboxModal = ({ isOpen, onClose ,sortByRequest }) => {
 
@@ -28,6 +29,8 @@ const InboxModal = ({ isOpen, onClose ,sortByRequest }) => {
   const { friendRequests, setFriendRequests } = useFriendStore();
   const { initSocketListeners, acceptFriendRequest, declineFriendRequest, acceptGameRequest, declineGameRequest } = useFriend();
   const {onlineUsers} = useOnlineStore();
+  const { width, setWidth } = useResponsiveStore();
+  const { WIDTH } = useResponsiveStore();
   
   useEffect(() => {
     initSocketListeners();
@@ -88,10 +91,13 @@ const InboxModal = ({ isOpen, onClose ,sortByRequest }) => {
 
   // changes
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-[100]">
-      <div ref={modalRef} className="bg-gray-800 w-96 p-4 rounded-lg shadow-lg relative animate-slide-in">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+      <div 
+        ref={modalRef} 
+        className={`bg-secondary ${width < WIDTH && isOpen ? "w-[90%]" : ""} min-w-[50%] p-4 rounded-lg shadow-lg relative animate-slide-in border border-sectionBorder`}
+      >
         <button className="absolute top-2 right-2 text-white hover:text-red-500 transition" onClick={onClose}> <IoClose className="text-xl font-extrabold" /></button>
-        <h2 className="text-lg font-bold text-white mb-4 pb-3 border-gray-700 border-b-2">Inbox</h2>
+        <h2 className="text-lg font-bold text-white mb-4 pb-3 border-b-2 border-b-[#3f3c38]">Inbox</h2>
         <div className="space-y-2 max-h-60 overflow-y-auto dark-scrollbar pr-2 dark-scrollbar">
           {sortByRequest.length === 0 ? (
             <p className="text-gray-400">No messages</p>

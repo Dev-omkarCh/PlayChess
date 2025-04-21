@@ -4,16 +4,26 @@ import InboxModal from "./InboxModal";
 import useSeachedUsers from "../../store/searchStore";
 import useFriendStore from "../../store/useFriendStore";
 import { useFriend } from "../../hooks/useFriend";
+import { BiSidebar } from "react-icons/bi";
+import { useResponsiveStore } from "../../store/responsiveStore";
+import { useOnlineStore } from "../../store/onlineStore";
+import useAuth from "../../store/useAuth";
 
-export default function TopMenu() {
-  const [isOpen, setIsOpen] = useState(false);
+
+export default function TopMenu({ width, setIsOpen}) {
   const [messages, setMessages] = useState([]);
 
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
+  const { authUser } = useAuth();
   const { setSearchUser } = useSeachedUsers();
   const { setGameId } = useFriendStore();
+  const { WIDTH } = useResponsiveStore();
   const { getAllUsres } = useFriend();
+  const [isOpenNotification, setIsOpenNotification] = useState();
+  const { onlineUsers } = useOnlineStore();
+  const isOnline = onlineUsers.length - 1;
+
   // const [loading, setLoading] = useState(false);
 
   // changes
@@ -49,29 +59,48 @@ export default function TopMenu() {
 }, [query]);
 
   return (
-    <div className="flex items-center justify-evenly w-full h-[8%] bg-[#0d121e] z-50 p-2">
+    <div 
+      className={`topMenu flex items-center justify-evenly w-full h-[8%] bg-primary p-2 border-b border-sectionBorder`}
+      >
+      {
+        width < WIDTH && 
+         <button 
+          className="p-1 rounded-md bg-secondary ml-2 hover:bg-[#454545] 
+          transition-all duration-300 border border-sectionBorder relative z-10"
+          onClick={() => setIsOpen(true)}
+          >
+          
+            <BiSidebar className="text-[1.5rem] text-white" />
+            {isOnline > 0 && (
+            <span className="absolute top-0 right-0 text-[10px] w-3 h-3 bg-red-500 rounded-full border-2 z-50 border-gray-800 "></span>
+          )}
+        </button>
+      }
       {/* Search Bar */}
-      <div className="flex items-center bg-gray-800 text-gray-300 px-3 py-2 rounded-lg w-[80%] ml-8">
-        <FaSearch className="text-gray-400 mr-2" />
+      <div className={`flex items-center bg-secondary 
+        text-gray-300 px-3 py-2 rounded-lg w-[80%] border border-sectionBorder ${width < WIDTH ? "ml-3" : "ml-8"}`}
+          
+        >
+        <FaSearch className="text-gray-400 mr-3" />
         <input
           type="text"
           placeholder="Search username"
-          className="bg-transparent outline-none text-sm w-full placeholder-gray-400"
+          className="bg-transparent outline-none text-sm w-full placeholder-gray-200"
           value={query}
           onChange={(e)=> setQuery(e.target.value)}
         />
       </div>
 
-      <div className="flex items-center space-x-4">
-        <button className="p-2 rounded-full bg-gray-700 hover:bg-gray-600 transition">
+      <div className="flex items-center ml-4 mr-4 h-full">
+        <button className="p-3 rounded-full bg-secondary ml-2 hover:bg-[#454545] transition-all duration-300 border border-sectionBorder">
           <FaSearch className="text-white" />
         </button>
 
         {/* Notification Bell */}
-        <div className="relative">
+        <div className="relative ml-4">
           <button 
-            onClick={() => setIsOpen(true)} 
-            className="p-3 rounded-full bg-gray-700 hover:bg-gray-600 transition"
+            onClick={() => setIsOpenNotification(true)} 
+            className="p-3 rounded-full bg-secondaryVaraint hover:bg-[#454545] transition-all duration-300 border border-sectionBorder"
           >
             <FaBell className="text-white text-[1.1rem]" />
             { sortByRequest.length !== 0 ? <span 
@@ -84,7 +113,8 @@ export default function TopMenu() {
           </button>
         
         </div>
-        <InboxModal isOpen={isOpen} onClose={() => setIsOpen(false)} sortByRequest={sortByRequest} />
+
+        <InboxModal onClose={() => setIsOpenNotification(false)} isOpen={isOpenNotification} sortByRequest={sortByRequest} />
       </div>
     </div>
   );

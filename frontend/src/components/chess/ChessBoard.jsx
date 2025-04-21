@@ -14,13 +14,7 @@ const ChessBoard = () => {
   const { board, movePiece, selectPiece, suggestedMoves, selectedPiece, setSelectedPiece, setSuggestedMoves, turn } = useChessStore();
   const { playerColor } = useSocketStore();
   const { promotion } = useChessStore();
-  const { boardColor } = useSettingStore();
-
-  // sound effect for moving pieces
-  const audioRef = useRef(new Audio(moveSound));
-  useEffect(() => {
-    audioRef.current.preload = 'auto';
-  }, []);
+  const { boardColor, getSettings } = useSettingStore();
 
   // Adjust board orientation for black player
   const boardToRender = playerColor === "black" ? [...board].reverse() : board;
@@ -38,7 +32,7 @@ const ChessBoard = () => {
           // Enable drag-and-drop
           const [{ isOver }, drop, ] = useDrop(() => ({
             accept: "piece",
-            drop: (item) => movePiece(item.position.row, item.position.col, adjustedRowIndex, colIndex,audioRef),
+            drop: (item) => movePiece(item.position.row, item.position.col, adjustedRowIndex, colIndex),
             collect: (monitor) => ({
               isOver: !!monitor.isOver(),
             }),
@@ -66,10 +60,13 @@ const ChessBoard = () => {
               }}
               className={`max-w-18 max-h-18 flex items-center justify-center relative
                 ${squareName} 
-                ${(adjustedRowIndex + colIndex) % 2 === 0 ? `${boardColor.white}` : `${boardColor.black}`}
                 ${isOver ? "bg-yellow-500" : ""}
                 ${isAbleToCapture ? "bg-red-500" : ""}
               `}
+              style={{
+                backgroundColor: `${(adjustedRowIndex + colIndex) % 2 === 0 ? `${boardColor?.whiteTile}` : `${boardColor?.blackTile}`}`
+                  
+              }}
             >
               {square && <ChessPiece piece={square} position={{ row: adjustedRowIndex, col: colIndex }} />}
               {isSuggestedSquare && !isAbleToCapture ? <span className="h-5 w-5 rounded-full bg-[#816c4a42] absolute z-50"></span> : ""}

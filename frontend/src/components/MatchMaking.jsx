@@ -6,6 +6,8 @@ import Button from './Button';
 import { useMatchmaking } from '../hooks/useMatchMaking';
 import useSocketStore from '../store/socketStore';
 import useAuth from '../store/useAuth';
+import useSettingStore from '../store/settingStore';
+import { useFriend } from '../hooks/useFriend';
 
 export default function Matchmaking() {
     const [timeLeft, setTimeLeft] = useState(300); // 5 minutes countdown
@@ -16,12 +18,18 @@ export default function Matchmaking() {
     const { socket } = useMainSocket();
     const navigate = useNavigate();
     const { authUser } = useAuth();
+    const { getSettings } = useSettingStore();
+    const { getBothPlayersDetails, checkIfGameIsReloaded } = useFriend();
     
     // Dynamic Text Changes
 
     socket?.on("startRandomGame",(roomId)=>{
         navigate("/multiplayer");
     })
+
+    useEffect(()=>{
+        getSettings();
+    },[]);
 
     const handleStartMatchMaking = () => {
 
@@ -66,8 +74,8 @@ export default function Matchmaking() {
     };
 
     return (
-        <div className="flex h-screen items-center justify-center bg-[#1a1a2e]">
-            <div className="bg-[#1b1b3a] p-6 rounded-xl shadow-2xl border-4 border-purple-600 w-[600px] flex flex-col gap-5 relative overflow-hidden">
+        <div className="flex h-screen items-center justify-center bg-primary">
+            <div className="bg-secondary p-6 rounded-xl shadow-2xl border-4 border-purple-600 w-[600px] flex flex-col gap-5 relative overflow-hidden">
 
                 {/* Animated Glow Effect */}
                 <div className="absolute -inset-2 bg-purple-600 opacity-10 blur-2xl rounded-xl"></div>

@@ -22,8 +22,8 @@ export default function Signup() {
   };
 
   return (
-    <div className="h-[100svh] w-[100svw] flex items-center justify-center bg-gray-900 text-white">
-      <div className="bg-gray-800 p-8 rounded-lg shadow-lg w-[85%] max-w-sm">
+    <div className="h-[100svh] w-[100svw] flex items-center justify-center bg-primary text-white ">
+      <div className="bg-secondary p-8 rounded-lg shadow-lg w-[85%] max-w-sm border border-sectionBorder">
       <h2 className="text-3xl font-bold text-center mb-1 flex gap-2 justify-center items-center"><GiChessRook className="text-orange-500 text-3xl" /> Welcome</h2>
       <p className="text-gray-400 text-sm text-center mb-6">Signup to start playing Chess nerds</p>
 

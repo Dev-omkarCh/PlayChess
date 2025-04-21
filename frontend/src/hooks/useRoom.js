@@ -8,9 +8,11 @@ export const useRoom = () => {
         
         socket?.emit("joinGame", room);
         setRoom(room);
+        localStorage.setItem("roomId",room);
 
         socket?.on("assignColor", (color) => {
         console.log("Assigned color:", color);
+        localStorage.setItem("playerColor",color);
         setPlayerColor(color);
         });
     }

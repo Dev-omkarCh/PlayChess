@@ -31,10 +31,13 @@ const ResultModel = () => {
   const clearGameData = () =>{
     closeGameOverModal();
     socket.emit("gameOver", room);
+    localStorage.removeItem("roomId");
+    localStorage.removeItem("playerColor");
     setNotation({you: [], opponent: []});
   }
 
   useEffect(()=>{
+    console.log(result);
     if(result === "win" || (result === "draw" && playerColor === "white" )){
       saveGame(Math.round(newRating), ratingCal);
     }

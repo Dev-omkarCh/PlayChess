@@ -39,12 +39,12 @@ const GenderSelect = ({ onSelect }) => {
             </button>
 
             {isOpen && (
-                <ul className="absolute w-full mt-2 z-10 bg-white dark:bg-gray-800 border rounded-lg shadow-lg">
+                <ul className="absolute w-full mt-2 z-10 bg-gray-800 border rounded-lg shadow-lg">
                     {genders.map((gender) => (
                         <li
                             key={gender.id}
                             onClick={() => handleSelect(gender)}
-                            className="flex items-center gap-2 px-4 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer transition-all"
+                            className="flex items-center gap-2 px-4 py-2 hover:bg-gray-500 dark:hover:bg-gray-700 cursor-pointer transition-all"
                         >
                             {gender.icon}
                             {gender.label}

@@ -21,6 +21,7 @@ export const useMatchmaking = () => {
             if(opponentId) setOpponentId(opponentId)
             setPlayerColor(color);
             setRoom(roomId);
+            localStorage.setItem("roomId",roomId);
         });
 
         return () => {

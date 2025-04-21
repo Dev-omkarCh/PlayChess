@@ -6,6 +6,7 @@ import { useRoom } from "./useRoom";
 import { useResultStore } from "../store/resultStore";
 import useAuth from "../store/useAuth";
 import useChessStore from "../store/chessStore";
+import useAdmin from "../store/useAdmin";
 
 export const useFriend = () => {
 
@@ -16,7 +17,7 @@ export const useFriend = () => {
     const { authUser } = useAuth();
     const { opponentId, setOpponentId, you, setYou, opponent, setOpponent, result, type, matchMaked } = useResultStore();
     const { notation } = useChessStore();
-    const { playerColor, room } = useSocketStore();
+    const { setIsAdmin } = useAdmin();
 
     
     const saveGame = async (newRating, ratingCal) =>{
@@ -256,6 +257,7 @@ export const useFriend = () => {
             method: "GET",
         });
         const response = await data.json();
+        console.log(response)
         if(!response) return response;
         setHistory(response.gameHistory);
         setUser(response.user);
@@ -298,6 +300,20 @@ export const useFriend = () => {
         return;
     }
 
+    const checkIfIsAdmin = async()=>{
+        try {
+           const data = await fetch(`/api/users/admin`, {
+                method: "GET",
+            });
+            const res = await data.json();
+            setIsAdmin(res.isAdmin);
+            return; 
+        } catch (error) {
+            console.error("Something went wrong")
+        }
+        
+    }
+
     return { initSocketListeners, 
         getFriendRequests, 
         getFriends, 
@@ -316,5 +332,6 @@ export const useFriend = () => {
         markAllMessagesAsRead,
         markMessageAsRead,
         checkIfGameIsReloaded,
+        checkIfIsAdmin
     }
 }

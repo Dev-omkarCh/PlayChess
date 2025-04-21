@@ -18,8 +18,8 @@ export default function Login() {
   };
 
   return (
-    <div className="h-dvh w-[100svw] flex items-center justify-center bg-gray-900 text-white">
-      <div className="bg-gray-800 p-8 rounded-lg shadow-lg w-[85%] max-w-sm">
+    <div className="h-dvh w-[100svw] flex items-center justify-center bg-primary text-white">
+      <div className="bg-secondary p-8 rounded-lg shadow-lg w-[85%] max-w-sm border border-sectionBorder">
       <h2 className="text-3xl font-bold text-center">Welcome Back</h2>
       <p className="text-gray-400 text-center mb-6">Please enter your details</p>
 
