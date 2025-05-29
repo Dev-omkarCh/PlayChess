@@ -1,6 +1,6 @@
 # PlayChess
 
-PlayChess is a modern, real-time multiplayer chess application built with React, Node.js, and WebSockets. It allows players to compete in online chess matches, track their game history, and analyze their performance. The project is designed with scalability, responsiveness, and user experience in mind.
+PlayChess is a modern, real-time multiplayer chess game built with React, Node.js, and Socket.io. It allows players to compete in online chess matches, track their game history, and analyze their performance.
 
 ---
 
@@ -8,18 +8,11 @@ PlayChess is a modern, real-time multiplayer chess application built with React,
 
 ### **Core Features**
 - **Multiplayer Chess**: Play real-time chess matches with other players.
-- **Matchmaking**: Automatically pair players for games.
+- **Random Matchmaking**: Automatically pair players for games.
 - **Game History**: Track and review completed games.
-- **Game Analytics**: Analyze performance with detailed statistics.
 - **User Profiles**: Manage accounts and view player stats.
 - **Leaderboards**: Compete for the top spot on the global leaderboard.
-
-### **Additional Features**
-- **Notifications**: Get notified about game invites and updates.
-- **Responsive Design**: Optimized for both desktop and mobile devices.
-- **Real-time Communication**: Powered by WebSockets for seamless gameplay.
-
----
+- **preferrences**: user can customize the app with game theme, pieces, board color and some additional settings.
 
 ## **Tech Stack**
 
@@ -27,48 +20,91 @@ PlayChess is a modern, real-time multiplayer chess application built with React,
 - **React**: For building the user interface.
 - **TailwindCSS**: For modern and responsive styling.
 - **Vite**: For fast development and build processes.
+- **Zustand**: Its state management library.
 
 ### **Backend**
 - **Node.js**: For server-side logic.
 - **Express.js**: For API and routing.
-- **WebSockets**: For real-time communication.
+- **Socket.io**: Library for real-time communication.
 - **MongoDB**: For database storage.
 
 ---
 
-## **Project Structure**
+# **Demonstration**
 
-```
-PlayChess/
-├── frontend/
-│   ├── src/
-│   │   ├── components/       # Reusable React components
-│   │   ├── pages/            # Application pages (e.g., Game, Profile)
-│   │   ├── hooks/            # Custom React hooks
-│   │   ├── store/            # State management
-│   │   ├── App.jsx           # Main application file
-│   │   └── index.jsx         # Entry point
-│   └── public/               # Static assets
-├── backend/
-│   ├── controllers/          # API business logic
-│   ├── models/               # Database schemas
-│   ├── routes/               # API routes
-│   ├── middleware/           # Middleware functions
-│   ├── socket.js             # WebSocket logic
-│   └── server.js             # Main server file
-└── README.md                 # Project documentation
-```
+### **1. Landing Page**
+
+
+![Home Page](./frontend/src/assets/preview/landingPage.png)
+
+### **2. Authentication Page**
+
+![Authentication](./frontend/src/assets/preview/authPage.png)
+
+### **3. Game Lobby**
+
+![Game lobby](./frontend/src/assets/preview/menuPage.png)
+
+### **4. Invite Friend Page**
+Can Send & Accept friend or game request
+
+![Invite Friend](./frontend/src/assets/preview/InviteFriendPage.png)
+
+#### Invite Friend page contains functionalities :-
+
+1. **Inbox** : 
+Inbox contains all the request from other player, it can be friend request and Game request.
+
+![Inbox](./frontend/src/assets/preview/notificationBox.png)
+***
+
+2. **Message box** :
+Message box contains all the message of actions like accepted a friend request and send a friend request.
+
+![Inbox](./frontend/src/assets/preview/MessageDailog.png)
+***
+
+3. **Online friends** :
+Shows all online friends. If friend is online, then only you can send a game request to your friend.
+
+![Inbox](./frontend/src/assets/preview/online.png)
+***
+
+4. **Search friends** :
+Shows all online friends. If friend is online, then only you can send a game request to your friend.
+
+![Inbox](./frontend/src/assets/preview/searchFriend.png)
+
+### **5. Game Page**
+
+![Inbox](./frontend/src/assets/preview/game.png)
+
+### **6. Result Model**
+
+![won](./frontend/src/assets/preview/won.png)
+
+![lose](./frontend/src/assets/preview/lose.png)
+
+### **7. Leaderboard**
+
+![lose](./frontend/src/assets/preview/leaderboard.png)
+
+### **7. Profile**
+
+![lose](./frontend/src/assets/preview/profilePage.png)
+
+### **8. Random Matchmaking**
+![lose](./frontend/src/assets/preview/matchMakingPage.png)
+
+
 
 ---
 
-## **Getting Started**
 
 ### **Prerequisites**
 - Node.js (v16 or higher)
 - MongoDB (local or cloud instance)
 - Git
-
-### **Setup Instructions**
 
 #### **1. Clone the Repository**
 ```bash
@@ -80,18 +116,20 @@ cd PlayChess
 - **Frontend**:
   ```bash
   cd frontend
-  npm install
+  npm i lucide-react react-router-dom axios socket.io-client zustand path
+  npm i chart.js clsx react-dnd react-dnd-html5-backend  tailwind-merge class-variance-authority react-hot-toast
   ```
 - **Backend**:
   ```bash
   cd backend
-  npm install
+  npm i express dotenv cors bcryptjs cookie-parser jsonwebtoken mongoose path socket.io
+  npm i nodemon -D
   ```
 
 #### **3. Configure Environment Variables**
 Create a `.env` file in the `backend` directory with the following variables:
 ```env
-PORT=5000
+PORT=4000
 MONGO_URI=your-mongodb-connection-string
 JWT_SECRET=your-jwt-secret
 ```
@@ -100,60 +138,13 @@ JWT_SECRET=your-jwt-secret
 - **Backend**:
   ```bash
   cd backend
-  npm start
+  npm run server
   ```
 - **Frontend**:
   ```bash
   cd frontend
   npm run dev
   ```
-
-#### **5. Access the Application**
-Open your browser and navigate to `http://localhost:3000`.
-
----
-
-## **Demonstration**
-
-### **1. Home Page**
-The landing page provides an overview of the app and allows users to log in or sign up.
-
-![Home Page](https://via.placeholder.com/800x400?text=Home+Page+Screenshot)
-
-### **2. Multiplayer Gameplay**
-Play real-time chess matches with other players.
-
-![Gameplay](https://via.placeholder.com/800x400?text=Gameplay+Screenshot)
-
-### **3. Game Analytics**
-Analyze your performance with detailed game statistics.
-
-![Game Analytics](https://via.placeholder.com/800x400?text=Game+Analytics+Screenshot)
-
-### **4. Leaderboard**
-Compete with other players and climb the global leaderboard.
-
-![Leaderboard](https://via.placeholder.com/800x400?text=Leaderboard+Screenshot)
-
----
-
-## **API Endpoints**
-
-### **User Routes**
-| Method | Endpoint          | Description               |
-|--------|-------------------|---------------------------|
-| POST   | `/api/users/login` | Log in a user             |
-| POST   | `/api/users/signup`| Register a new user       |
-| GET    | `/api/users/:id`   | Get user details          |
-
-### **Game Routes**
-| Method | Endpoint              | Description               |
-|--------|-----------------------|---------------------------|
-| POST   | `/api/games/create`   | Create a new game         |
-| GET    | `/api/games/history`  | Get game history          |
-| GET    | `/api/games/:id`      | Get details of a game     |
-
----
 
 ## **Future Enhancements**
 - **Spectator Mode**: Allow users to watch ongoing games.
@@ -163,22 +154,9 @@ Compete with other players and climb the global leaderboard.
 
 ---
 
-## **Contributing**
-Contributions are welcome! Please follow these steps:
-1. Fork the repository.
-2. Create a new branch (`git checkout -b feature-name`).
-3. Commit your changes (`git commit -m "Add feature"`).
-4. Push to the branch (`git push origin feature-name`).
-5. Open a pull request.
-
----
-
-## **License**
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-
----
-
 ## **Contact**
 For questions or feedback, feel free to reach out:
-- **Email**: your-email@example.com
-- **GitHub**: [your-username](https://github.com/your-username)
+- **Email**: omkarchikhale.dev@gmail.com
+- **LinkedIn**: [linkedin.com/in/omkar-chikhale/](https://www.linkedin.com/in/omkar-chikhale/)
+
+

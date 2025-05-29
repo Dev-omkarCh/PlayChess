@@ -76,7 +76,7 @@ const InboxModal = ({ isOpen, onClose, messages, setMessages }) => {
                   <p className="text-white font-bold">{msg.username}</p>
                   <p className="text-gray-300">{msg.message}</p>
                 </div>
-                <p className="text-gray-400 text-sm italic">{formatDateTime(msg.createdAt)}</p>
+                <p className="text-gray-400 text-sm italic ml-2">{formatDateTime(msg.createdAt)}</p>
               </div>
             ))
           )}

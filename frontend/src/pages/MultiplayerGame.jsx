@@ -89,7 +89,7 @@ export default function ChessGamePage() {
       window.removeEventListener("beforeunload", handleBeforeUnload);
       // document.removeEventListener("visibilitychange", handleUnload);
     }
-  },[socket]);
+  },[]);
 
   useEffect(() => {
     const roomId = localStorage.getItem("roomId");
@@ -139,12 +139,14 @@ export default function ChessGamePage() {
         //   setIsLoading(false);
         // });
     }, 600); // small buffer to let DB complete save
-  }, [socket]);
+  }, []);
   
   listenForMoves();
   
   const handleResign = () => {
+    console.log("before");
     setGameResult("lose","resign");
+    console.log("after");
     openGameOverModal(true);
     socket.emit("resign",room);
   }

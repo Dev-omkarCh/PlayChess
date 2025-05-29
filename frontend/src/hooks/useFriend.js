@@ -18,6 +18,8 @@ export const useFriend = () => {
     const { opponentId, setOpponentId, you, setYou, opponent, setOpponent, result, type, matchMaked } = useResultStore();
     const { notation } = useChessStore();
     const { setIsAdmin } = useAdmin();
+    const { playerColor, setPlayerColor } = useSocketStore();
+    const { room } = useSocketStore();
 
     
     const saveGame = async (newRating, ratingCal) =>{

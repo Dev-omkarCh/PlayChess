@@ -94,7 +94,7 @@ const InboxModal = ({ isOpen, onClose ,sortByRequest }) => {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
       <div 
         ref={modalRef} 
-        className={`bg-secondary ${width < WIDTH && isOpen ? "w-[90%]" : ""} min-w-[50%] p-4 rounded-lg shadow-lg relative animate-slide-in border border-sectionBorder`}
+        className={`bg-secondary ${width < WIDTH && isOpen ? "w-[90%]" : ""} min-w-[30%] p-4 rounded-lg shadow-lg relative animate-slide-in border border-sectionBorder`}
       >
         <button className="absolute top-2 right-2 text-white hover:text-red-500 transition" onClick={onClose}> <IoClose className="text-xl font-extrabold" /></button>
         <h2 className="text-lg font-bold text-white mb-4 pb-3 border-b-2 border-b-[#3f3c38]">Inbox</h2>
