@@ -10,7 +10,7 @@ import GameMenu from './pages/GameMenu.jsx';
 import PuzzleCard from './components/PuzzleCard.jsx';
 
 import Profile from './pages/Profile.jsx';
-import Dashboard from './pages/DashBoard.jsx';
+// import Dashboard from './pages/DashBoard.jsx';
 import ChessGame from './components/chess/ChessGame.jsx';
 
 import MultiplayerGame from './pages/MutiplayerGame/MultiplayerGame.jsx';
@@ -26,7 +26,7 @@ import useFriendStore from './store/useFriendStore.js';
 import MatchMaking from './components/MatchMaking.jsx';
 
 import SettingsModal from './components/Settings.jsx';
-import MultiplayerDemo from './pages/M.jsx';
+// import MultiplayerDemo from './pages/M.jsx';
 import GameAnalytics from './pages/GameAnalytics.jsx';
 import useAdmin from './store/useAdmin.js';
 import TestOnlineChess from './test/TestOnlineChess.jsx';
@@ -49,7 +49,7 @@ const App = () => {
           <Route path="/signup" element={authUser ? <Navigate to="/menu" /> :<Signup />} />
           <Route path="/menu" element={authUser ? <GameMenu /> : <Navigate to="/login" />} />
           <Route path="/profile" element={authUser ? <Profile /> : <Navigate to="/login" />} />
-          <Route path="/dash" element={<Dashboard />} />
+          {/* <Route path="/dash" element={<Dashboard />} /> */}
           <Route path="/chess" element={<ChessGame />} />
           <Route path="/multiplayer" element={<MultiplayerGame />} />
           <Route path="*" element={<NotFound />} />
