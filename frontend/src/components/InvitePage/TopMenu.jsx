@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { FaSearch, FaBell } from "react-icons/fa";
-import InboxModal from "./InboxModal";
+import NotificationModal from "./NotificationModal";
 import useSeachedUsers from "../../store/searchStore";
 import useFriendStore from "../../store/useFriendStore";
 import { useFriend } from "../../hooks/useFriend";
@@ -10,68 +10,59 @@ import { useOnlineStore } from "../../store/onlineStore";
 import useAuth from "../../store/useAuth";
 
 
-export default function TopMenu({ width, setIsOpen}) {
-  const [messages, setMessages] = useState([]);
+export default function TopMenu({ width, setIsOpen }) {
 
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState([]);
-  const { authUser } = useAuth();
   const { setSearchUser } = useSeachedUsers();
-  const { setGameId } = useFriendStore();
   const { WIDTH } = useResponsiveStore();
-  const { getAllUsres } = useFriend();
   const [isOpenNotification, setIsOpenNotification] = useState();
   const { onlineUsers } = useOnlineStore();
   const isOnline = onlineUsers.length - 1;
 
-  // const [loading, setLoading] = useState(false);
 
-  // changes
-  const { friendRequests} = useFriendStore();
-  const sortByRequest = friendRequests.filter((request) => request.type === "friend-request" || request.type === "game-request");
-
-  // end
+  const { friendRequests } = useFriendStore();
+  const notifications = friendRequests.filter((request) => request.type === "friend-request" || request.type === "game-request");
 
   useEffect(() => {
     const fetchResults = async () => {
-        if (query.trim() === "") {
-            // setResults([]);
-            setSearchUser([]);
-            return;
-        }
-        // setLoading(true);
-        try {
-          const res = await fetch(`/api/users/search?query=${query}`,{
-            method : "GET",
-            headers : { "Content-Type": "application/json"},
-          });
-          const data = await res.json();
-          setSearchUser(data);
-        } catch (error) {
-            console.error("Search error:", error);
-        }
-        // setLoading(false);
+      if (query.trim() === "") {
+        // setResults([]);
+        setSearchUser([]);
+        return;
+      }
+      // setLoading(true);
+      try {
+        const res = await fetch(`/api/users/search?query=${query}`, {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        });
+        const data = await res.json();
+        setSearchUser(data);
+      } catch (error) {
+        console.error("Search error:", error);
+      }
+      // setLoading(false);
     };
 
     const debounceTimeout = setTimeout(fetchResults, 300); // Debounce API calls (best practice)
 
     return () => clearTimeout(debounceTimeout); // Cleanup on unmount or retype
-}, [query]);
+  }, [query]);
 
   return (
-    <div 
+    <div
       className={`topMenu flex items-center justify-evenly w-full h-[8%] bg-primary p-2 border-b border-sectionBorder`}
-      >
+    >
       {
-        width < WIDTH && 
-         <button 
+        width < WIDTH &&
+        <button
           className="p-1 rounded-md bg-secondary ml-2 hover:bg-[#454545] 
           transition-all duration-300 border border-sectionBorder relative z-10"
           onClick={() => setIsOpen(true)}
-          >
-          
-            <BiSidebar className="text-[1.5rem] text-white" />
-            {isOnline > 0 && (
+        >
+
+          <BiSidebar className="text-[1.5rem] text-white" />
+          {isOnline > 0 && (
             <span className="absolute top-0 right-0 text-[10px] w-3 h-3 bg-red-500 rounded-full border-2 z-50 border-gray-800 "></span>
           )}
         </button>
@@ -79,15 +70,15 @@ export default function TopMenu({ width, setIsOpen}) {
       {/* Search Bar */}
       <div className={`flex items-center bg-secondary 
         text-gray-300 px-3 py-2 rounded-lg w-[80%] border border-sectionBorder ${width < WIDTH ? "ml-3" : "ml-8"}`}
-          
-        >
+
+      >
         <FaSearch className="text-gray-400 mr-3" />
         <input
           type="text"
           placeholder="Search username"
           className="bg-transparent outline-none text-sm w-full placeholder-gray-200"
           value={query}
-          onChange={(e)=> setQuery(e.target.value)}
+          onChange={(e) => setQuery(e.target.value)}
         />
       </div>
 
@@ -98,23 +89,27 @@ export default function TopMenu({ width, setIsOpen}) {
 
         {/* Notification Bell */}
         <div className="relative ml-4">
-          <button 
-            onClick={() => setIsOpenNotification(true)} 
+          <button
+            onClick={() => setIsOpenNotification(true)}
             className="p-3 rounded-full bg-secondaryVaraint hover:bg-[#454545] transition-all duration-300 border border-sectionBorder"
           >
             <FaBell className="text-white text-[1.1rem]" />
-            { sortByRequest.length !== 0 ? <span 
-            className="absolute top-0 left-[60%] bg-red-500 w-4 h-4 text-white font-bold rounded-full text-[10px] flex justify-center items-center">
-              {sortByRequest.length}
-          </span> :
-          ""
-        }
-          
+            {notifications.length !== 0 ? <span
+              className="absolute top-0 left-[60%] bg-red-500 w-4 h-4 text-white font-bold rounded-full text-[10px] flex justify-center items-center">
+              {notifications.length}
+            </span> :
+              ""
+            }
+
           </button>
-        
+
         </div>
 
-        <InboxModal onClose={() => setIsOpenNotification(false)} isOpen={isOpenNotification} sortByRequest={sortByRequest} />
+        <NotificationModal
+          onClose={() => setIsOpenNotification(false)} 
+          isOpen={isOpenNotification} 
+        />
+        
       </div>
     </div>
   );

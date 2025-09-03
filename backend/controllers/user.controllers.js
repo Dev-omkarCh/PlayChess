@@ -32,7 +32,7 @@ export const searchByUserName = async(req, res) =>{
         res.status(500).json({ error: "Internal Server Error" });
         
     }
-}
+};
 
 export const addFriend = async(req, res) =>{
     try {
@@ -63,40 +63,148 @@ export const addFriend = async(req, res) =>{
         console.log("Error in addFriend Controller", e.message);
         res.status(500).json({ error: "Internal Server Error" });     
     }
-}
+};
 
+// optimized
 export const declineFreind = async(req, res) =>{
     try {
         const { id } = req.params;
-        const userId = req.user._id;
         const user = req.user;
-        const otherUser = await User.findById(id);
+
+        if(!id) return res.status(400).json({ message: "Invalid User ID" });
 
         // Check if the friend request is valid
         const validRequest = await Notifications.findOne({ from : id, to : req.user._id, type : "friend-request", isRead : false });
+
         if (!validRequest) {
             return res.status(400).json({ error: "Invalid Request" });
-        }
+        };
 
         // Mark the request as read
         validRequest.isRead = true;
         await validRequest.save();
-            
-        await otherUser.save();
+        
         Notifications.create({
-            from : userId,
+            from : user._id,
             type : "declined-friend-request",
             message : `${user.username} declined your friend request`,
             to : id,
         });
-        res.json({ msg: "Friend Request Declined" });
+
+        const userWhoSendGameRequest =  await User.findById(id).select("username");
+        console.log(`Game request declined of ${userWhoSendGameRequest.username}`);
+
+        return res.json({ 
+            message: "Friend Request Declined",
+            from: userWhoSendGameRequest.username,
+        });
     } 
     catch (e) {
         console.log("Error in removeFriend Controller", e.message);
-        res.status(500).json({ error: "Internal Server Error" });
-        
+        return res.status(500).json({ message : "Internal Server Error" }); 
+    };
+};
+
+export const declineGameRequest = async(req,res) =>{
+    try {
+        const { id } = req.params;
+        const user = await User.findById(req.user._id);
+
+        if(!id) return res.status(400).json({ message: "Invalid User ID" });
+
+        if (user.friends.includes(id)) {
+
+            const validRequest = await Notifications.findOne({ from : id, to : req.user._id, type : "game-request", isRead : false });
+
+            if (!validRequest) {
+                return res.status(400).json({ message: "Invalid Request" });
+            }
+
+            // Mark the request as read
+            validRequest.isRead = true;
+            await validRequest.save();
+
+            await Notifications.create({
+                to : id,
+                from : req.user._id,
+                type : "decline-game-request",
+                message : `${user.username} declined you a game request`,
+            });
+
+            const userWhoSendGameRequest =  await User.findById(id).select("username");
+
+            console.log(`Game request declined of ${userWhoSendGameRequest.username}`);
+
+            return res.json({ 
+                message: "Decline Game Request Successfully",
+                from : userWhoSendGameRequest.username,
+            });
+        } else {
+            return res.json({ message: "Already had send the friend request" });
+        }
+    } 
+    catch (e) {
+        if(e.message.includes("Cast to ObjectId failed for value")){
+            return res.status(400).json({ message: "Invalid User ID" });
+        }
+        console.log("Error in declineGameRequest Controller", e.message);
+        res.status(500).json({ message: "Internal Server Error" });     
     }
-}
+};
+
+export const acceptGameRequest = async(req,res) =>{
+
+    // ******* Duties *******
+
+    // 1. Check if, id(the sender who send us game request's ID) has any notification of type `game-request`,
+    // where `to` field is us & `from` is the friend & `isRead` is false
+    // 2. Mark the notification(which friend send you) as read i.e `isRead` : true
+    // 3. Create a new notification of `accept-game-request` 
+    // 4. return new notification object to frontend
+
+    try {
+        const { id } = req.params;
+        const user = await User.findById(req.user._id);
+
+        if(!id) return res.status(400).json({ error : "Invalid User ID" });
+
+        if (user.friends.includes(id)) {
+            
+            const validRequest = await Notifications.findOne({ from : id, to : req.user._id, type : "game-request", isRead : false });
+
+            // check if notification exits in database
+            if (!validRequest) {
+                return res.status(400).json({ error: "Invalid Request" });
+            };
+
+            // Mark the request as read
+            validRequest.isRead = true;
+            await validRequest.save();
+
+            const notification = await Notifications.create({
+                to : id,
+                from : req.user._id,
+                gameId : validRequest.gameId,
+                type : "accept-game-request",
+                message : `${user.username} accepted you a game request`,
+            });
+
+            return res.json({ 
+                message: "Request send Successfully", 
+                notification 
+            });
+        } 
+        else {
+            return res.json({ message: "Can't Accept!, you are not friends" });
+        };
+    }
+    catch (error) {
+        console.log("Error in acceptGameRequest Controller", error.message);
+        res.status(500).json({ error: "Internal Server Error" });     
+    };
+};
+
+// end
 
 export const acceptFriend = async(req, res) =>{
     try {
@@ -143,7 +251,52 @@ export const acceptFriend = async(req, res) =>{
         res.status(500).json({ error: "Internal Server Error" });
         
     }
-}
+};
+
+
+export const sendGameRequest = async(req,res) =>{
+    try {
+        const { id } = req.params;
+        const user = await User.findById(req.user._id);
+
+        if(!id) return res.status(400).json({ error: "Invalid User ID" });
+
+        const friend = await User.findById(id);
+        if (!friend) return res.status(404).json({ error: "friend not found" });
+
+        if (user.friends.includes(id)) {
+
+            //TODO: Remove Game id as its useless
+            const gameId = crypto.randomUUID();
+
+            const notificationAlreadyExists = await Notifications.findOne({ from : user._id, to : id, type : "game-request", isRead : false });
+
+            if(notificationAlreadyExists){
+                console.log("You have already sent a game request to this friend");
+                return res.status(400).json({ error: `You have already sent a game request to ${friend.username}` });
+            };
+        
+            const notification = await Notifications.create({
+                to : id,
+                from : req.user._id,
+                type : "game-request",
+                gameId : gameId,
+                message : `${user.username} sent you a game request`,
+            });
+
+            res.json({ message : "Game Request send Successfully", notification});
+        } else {
+            res.json({ message: "You have to be friends first, to send a game request" });
+        };
+    } 
+    catch (e) {
+        if(e.message.includes("Cast to ObjectId failed for value")){
+            return res.status(400).json({ message : "Invalid User ID" });
+        }
+        console.log("Error in sendGameRequest Controller", e.message);
+        res.status(500).json({ message : "Internal Server Error" });     
+    }
+};
 
 export const removeFriend = async(req, res) =>{
     try {
@@ -205,77 +358,7 @@ export const getFriends = async(req, res) =>{
     }
 }
 
-export const sendGameRequest = async(req,res) =>{
-    try {
-        const { id } = req.params;
-        const user = await User.findById(req.user._id);
-        
-        // Check if the user exists
-        const userExists = await User.findById(id);
 
-        if (user.friends.includes(id)) {
-            const gameId = crypto.randomUUID();
-
-            const notification = await Notifications.create({
-                to : id,
-                from : req.user._id,
-                type : "game-request",
-                gameId : gameId,
-                message : `${user.username} sent you a game request`,
-            });
-
-            res.json({ msg: "Game Request send Successfully", notification});
-        } else {
-            res.json({ msg: "Already had send the game request" });
-        }
-    } 
-    catch (e) {
-        if(e.message.includes("Cast to ObjectId failed for value")){
-            return res.status(400).json({ error: "Invalid User ID" });
-        }
-        console.log("Error in sendGameRequest Controller", e.message);
-        res.status(500).json({ error: "Internal Server Error" });     
-    }
-}
-
-export const acceptGameRequest = async(req,res) =>{
-    try {
-        const { id } = req.params;
-        const user = await User.findById(req.user._id);
-
-        if (user.friends.includes(id)) {
-            
-            const validRequest = await Notifications.findOne({ from : id, to : req.user._id, type : "game-request", isRead : false });
-
-            if (!validRequest) {
-                return res.status(400).json({ error: "Invalid Request" });
-            }
-
-            // Mark the request as read
-            validRequest.isRead = true;
-            await validRequest.save();
-
-            const notification = await Notifications.create({
-                to : id,
-                from : req.user._id,
-                gameId : validRequest.gameId,
-                type : "accept-game-request",
-                message : `${user.username} accepted you a game request`,
-            });
-
-            res.json({ msg: "Request send Successfully", notification });
-        } else {
-            res.json({ msg: "Already had send the friend request" });
-        }
-    } 
-    catch (e) {
-        if(e.message.includes("Cast to ObjectId failed for value")){
-            return res.status(400).json({ error: "Invalid User ID" });
-        }
-        console.log("Error in acceptGameRequest Controller", e.message);
-        res.status(500).json({ error: "Internal Server Error" });     
-    }
-}
 
 export const saveGameDetails = async(req,res) =>{
     const { white, black, won, moves, roomId, maxTime, rating, type } = req.body;
@@ -325,7 +408,6 @@ export const saveGameDetails = async(req,res) =>{
     }
 
     Promise.all([ await playerWhite.save(), await playerBlack.save()]);
-    console.log("saved");
 
     try {
             const newGame = new GameHistory({
@@ -353,19 +435,16 @@ export const saveGameDetails = async(req,res) =>{
 }
 
 export const getBothPlayersDetails = async(req,res) =>{
-    console.log("getBothPlayersDetails");
-    const { id  } = req.params;
+    const { id  } = req.body;
     const opponentId = id;
 
-    if(!opponentId) return res.status(400).json({ error: "Invalid Opponent ID" })
-    console.log("opponentId: ",opponentId);
+    if(!opponentId) return res.status(400).json({ error: "Invalid Opponent ID" });
 
     try {
         const you = await User.findById(req.user._id);
         const opponent = await User.findById(opponentId);
 
         if(!opponent) return res.status(400).json({ error: "No such user exists to play" });
-        console.log("passed")
         return res.json({ you, opponent });
         
     } 
@@ -375,50 +454,11 @@ export const getBothPlayersDetails = async(req,res) =>{
     }
 }
 
-export const declineGameRequest = async(req,res) =>{
-    try {
-        const { id } = req.params;
-        const user = await User.findById(req.user._id);
-
-        if (user.friends.includes(id)) {
-
-            const validRequest = await Notifications.findOne({ from : id, to : req.user._id, type : "game-request", isRead : false });
-
-            if (!validRequest) {
-                return res.status(400).json({ error: "Invalid Request" });
-            }
-
-            // Mark the request as read
-            validRequest.isRead = true;
-            await validRequest.save();
-
-            await Notifications.create({
-                to : id,
-                from : req.user._id,
-                type : "decline-game-request",
-                message : `${user.username} declined you a game request`,
-            });
-
-            res.json({ msg: "Decline Game Request Successfully" });
-        } else {
-            res.json({ msg: "Already had send the friend request" });
-        }
-    } 
-    catch (e) {
-        if(e.message.includes("Cast to ObjectId failed for value")){
-            return res.status(400).json({ error: "Invalid User ID" });
-        }
-        console.log("Error in declineGameRequest Controller", e.message);
-        res.status(500).json({ error: "Internal Server Error" });     
-    }
-}
 
 export const getPlayer = async(req,res) =>{
     try {
         const { id } = req.params;
-        console.log(id);
         const user = await User.findById(id);
-        console.log(user);
         res.json(user);
     } 
     catch (e) {
@@ -835,8 +875,6 @@ export const loadStatus = async (req, res) => {
       const { playerColor } = req.body;
       const status = await GameStatus.findOne({ roomId: req.params.roomId, playerColor });
       if (!status) return res.status(404).json({ error: "No saved game found" });
-
-      console.log("Load status successful")
   
       res.status(200).json(status);
     } catch (err) {
@@ -852,7 +890,6 @@ export const checkAdminStatus = async (req, res) => {
     
       console.log(user)
       if(user.username === "Admin"){
-        console.log("yes")
         return res.status(200).json({ isAdmin : true });
       }
       return res.status(200).json({isAdmin : false });
@@ -861,3 +898,4 @@ export const checkAdminStatus = async (req, res) => {
       res.status(500).json({ error: "Error in checkAdminStatus Controller", err });
     }
 };
+

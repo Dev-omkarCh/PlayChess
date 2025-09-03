@@ -1,29 +1,26 @@
-import React, { useEffect } from 'react'
+import { useEffect } from 'react'
 import { calculateElo } from '../../utils/calculateElo';
 import { getRandomColor } from '../../utils/randomColorGenerator';
-import {} from "react-icons/io";
 import Button from '../Button';
 import { IoClose } from 'react-icons/io5';
 import useChessStore from '../../store/chessStore';
 import { useNavigate } from 'react-router-dom';
 import useAuth from '../../store/useAuth';
-import useFriendStore from '../../store/useFriendStore';
 import useSocketStore from '../../store/socketStore';
 import { useFriend } from '../../hooks/useFriend';
-import useSocket from '../../hooks/useSocket';
 import { useMainSocket } from '../../store/socketIoStore';
 import { useResultStore } from '../../store/resultStore';
 
 
 const ResultModel = () => {
 
-  const {authUser} = useAuth();
+  const { authUser } = useAuth();
   // const { opponent } = useFriendStore();
   const { closeGameOverModal, setNotation } = useChessStore();
   const { joinGame, isGameStarted, startGameListener, gameOver, playerColor } = useSocketStore();
   const { room } = useSocketStore();
   const navigate = useNavigate();
-  const {result, type, opponent, you} = useResultStore();
+  const { result, type, opponent, you } = useResultStore();
   const { saveGame } = useFriend();
   const { newRating, isRise, ratingCal } = calculateElo(you.elo,opponent.elo,result);
   const { socket } = useMainSocket();
@@ -31,17 +28,21 @@ const ResultModel = () => {
   const clearGameData = () =>{
     closeGameOverModal();
     socket.emit("gameOver", room);
+
     localStorage.removeItem("roomId");
-    localStorage.removeItem("playerColor");
+    localStorage.removeItem("state");
+    localStorage.removeItem("reload");
+    // localStorage.removeItem("playerColor");
+
     setNotation({you: [], opponent: []});
   }
 
   useEffect(()=>{
     console.log(result);
     if(result === "win" || (result === "draw" && playerColor === "white" )){
-      saveGame(Math.round(newRating), ratingCal);
-    }
-  },[])
+      // saveGame(Math.round(newRating), ratingCal);
+    };
+  },[]);
 
     const handleNewGame = () => {
       clearGameData();

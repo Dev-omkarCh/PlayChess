@@ -121,7 +121,7 @@ export const useFriend = () => {
         return data;
     }
 
-    const getFriends = async () => {
+    const getAllFriendsList = async () => {
         const response = await fetch("/api/users/friends", {
             method: "GET",
             headers: { "Content-Type": "application/json" },
@@ -160,39 +160,101 @@ export const useFriend = () => {
         toast.success(res.msg);
     }
 
-    const acceptFriendRequest = async (requestId) => {
-        const data = await fetch(`/api/users/send/accept-request/${requestId}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-        });
-        const response = await data.json();
-        toast.success(response.msg);
-        setFriend(response?.sender);
-        socket.emit("accept-friend-request", { requestId, notification: response.notification, sender : response.user });
-    };
+    // optimized
 
     const declineFriendRequest = async (requestId) => {
-        const data = await fetch(`/api/users/send/deny-request/${requestId}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-        });
-        const response = await data.json();
-        toast.success(response.msg);
+
+        try {
+            const response = await fetch(`/api/users/send/deny-request/${requestId}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+            });
+            const data = await response.json();
+            if(!response.ok) return toast.error(data?.message);
+
+            // optional
+            console.log(`Friend Request Declined of ${data?.from}`);
+            toast.success(`Friend Request Declined of ${data?.from}`);
+
+        } catch (error) {
+            toast.error(error.message);
+        }
+    };
+
+    const declineGameRequest = async (requestId) => {
+
+        try {
+            const response = await fetch(`/api/users/game/decline/${requestId}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+            });
+            const data = await response.json();
+            if(!response.ok) return toast.error(data?.message);
+
+            // optional
+            console.log(`Game Request Declined of ${data?.from}`);
+            toast.success(`Game Request Declined of ${data?.from}`);
+
+        } catch (error) {
+            toast.error(error.message);
+        };
     };
 
     const sendGameRequest = async (receiverId) => {
-        const response = await fetch(`/api/users/game/send/${receiverId}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-        });
-        const data = await response.json();
-        toast.success(data.msg);
-        setGameId(data?.notification.gameId);
-        joinGame(data?.notification.gameId);
-        socket.emit("game-request", { id : receiverId, notification:  data.notification});
+        try {
+            const response = await fetch(`/api/users/game/send/${receiverId}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+            });
 
-        return data;
+            const data = await response.json();
+            if(!response.ok) throw new Error(data?.error);
+            
+            setGameId(data?.notification.gameId);
+            joinGame(data?.notification.gameId);
+            socket.emit("game-request", { id : receiverId, notification:  data.notification});
+
+            console.log(data?.message);
+            toast.success(data?.message);
+            
+            return data;
+
+        } catch (error) {
+
+            console.error(error.message);
+            toast.error(error.message);  
+        }
     };
+
+    const acceptFriendRequest = async (requestId) => {
+
+        // 1. sets other friends data/ opponent into `friends` state in zustand store(useFriendStore)
+        // 2. sends a socket event of `accept-friend-request` to start the game on other players screen
+        
+        try {
+            const response = await fetch(`/api/users/send/accept-request/${requestId}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+            });
+            const data = await response.json();
+            if(!response.ok) throw new Error(data?.error);
+
+            setFriend(data?.sender);
+            socket?.emit("accept-friend-request", { requestId, notification: data?.notification, sender : data?.user });
+
+            // optional
+            console.log("Accepted Game Request Successfully");
+            toast.success(data?.message);
+            
+        } catch (error) {
+
+            // optional
+            console.error(error.message);
+            toast.error(error.message);
+        };
+    };
+
+    // end
 
     const acceptGameRequest = async (requestId) => {
         const data = await fetch(`/api/users/game/accept/${requestId}`, {
@@ -218,32 +280,25 @@ export const useFriend = () => {
     };
 
     const getBothPlayersDetails = async () =>{
-        // if(matchMaked){
-        //     return;
-        // }
-        const response = await fetch(`/api/users/game/players/details/${opponentId}`, {
-            method: "GET",
+        const response = await fetch(`/api/users/game/players/details`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body : JSON.stringify({ id: opponentId }),
+
         });
         const data = await response.json();
         if(!data.you && !data.opponent){
             toast.error("Can't get data of both Players");
             return; 
         }
-        setYou(data.you);
-        setOpponent(data.opponent);
+        setYou(data?.you);
+        setOpponent(data?.opponent);
         
-    }
-
-    const declineGameRequest = async (requestId) => {
-        const data = await fetch(`/api/users/game/decline/${requestId}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-        });
-        const response = await data.json();
-        toast.success(response.msg);
     };
 
-    const initSocketListeners = () => {
+    
+
+    const friendRequestListener = () => {
         if (!socket) return;
         socket.on("friendRequest", (data) => {
             set((state) => ({ friendRequests: [...state.friendRequests, data] }));
@@ -316,9 +371,10 @@ export const useFriend = () => {
         
     }
 
-    return { initSocketListeners, 
+    return { 
+        friendRequestListener, 
         getFriendRequests, 
-        getFriends, 
+        getAllFriendsList, 
         sendFriendRequest, 
         acceptFriendRequest, 
         declineFriendRequest, 

@@ -6,9 +6,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server,{
     cors : {
-        origin : [ "http://localhost:3000"],
-        methods : ["GET", "POST"],
-        credentials: true
+        origin : "*",
     }
 });
 
@@ -19,7 +17,7 @@ let matchmakingQueue = [];
 
 export const isInRoom = (roomId) =>{
   return gameRooms[roomId] != null
-}
+};
 
 
 export const getReceiverSocketId = (receiverId) =>{
@@ -36,6 +34,10 @@ io.on("connection", (socket) => {
     userSocketMap[userId] = socket.id;
     io.emit("online_users",Object.keys(userSocketMap));
   }
+
+  socket.on("pawnPromotion",({ piece, board })=>{
+    io.emit("updateBoardOnPawnPromotion", { piece, board });
+  });
   
   
   // Handle joining a game room
@@ -59,10 +61,11 @@ io.on("connection", (socket) => {
 
   // Add player to the queue
   socket.on("joinQueue", () => {
+    console.log("matchmakingQueue outside", matchmakingQueue);
     if (!matchmakingQueue.includes(socket.id)) {
       matchmakingQueue.push(socket.id);
+      console.log("matchmakingQueue inside", matchmakingQueue);
       
-      //
       userIdMap[socket.id] = userId;
 
       console.log(`Player ${socket.id} added to matchmaking queue.`);
@@ -70,11 +73,18 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("joinGameAgain",(roomId)=>{
-    console.log("roomId : "+roomId);
-    if(!roomId ) return console.log("In joinGameAgain > socket.js error");
-     socket.join(roomId);
-  })
+  socket.on("joinGameOnReload",(roomId)=>{
+    console.log("(socket.js/joinGameOnReload) roomId : "+ roomId);
+    if(!roomId ) return console.log("(socket.js/joinGameOnReload) No roomId provided");
+
+    if (!gameRooms[roomId]) gameRooms[roomId] = [];
+    if(!gameRooms[roomId].includes(socket.id)){
+      gameRooms[roomId].push(socket.id);
+    }
+
+    socket.join(roomId);
+    console.log(`(socket.js/joinGameOnReload) Player re-joined room: ${roomId}`);
+  });
 
   socket.on("reload", (room) => {
     console.log(room);
@@ -83,6 +93,7 @@ io.on("connection", (socket) => {
 
   // Handle move events
   socket.on("movePiece", ({ room, move }) => {
+    console.log("(socket.js/movePiece) Piece moved :", move);
     socket.to(room).emit("updateBoard", move);
   });
 
@@ -146,7 +157,7 @@ io.on("connection", (socket) => {
     const newNotification = [notification]
     const socketId = userSocketMap[id];
     socket.to(socketId).emit("hasAccepted",{ newNotification, userId });
-  })
+  });
 
   // Handle disconnection
   socket.on("disconnect", () => {
@@ -164,7 +175,15 @@ io.on("connection", (socket) => {
     }
     console.log("Player disconnected:", socket.id);
     console.log("disconnection",userSocketMap)
+
+    
+
   });
+
+  socket.on("hasSendMessage", (room, message) => {
+    socket.broadcast.to(room).emit("newMessage", message);
+  });
+
 });
 
 // Create room and notify players

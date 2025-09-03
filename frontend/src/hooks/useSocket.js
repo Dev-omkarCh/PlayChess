@@ -14,7 +14,7 @@ const useSocket = () => {
     const { authUser } = useAuth();
     const { socket, setSocket } = useMainSocket();
     const { onlineUsers, setOnlineUsers }  = useOnlineStore();
-    const { setFriendRequests, friends, setFriends, setFriend, setFriendRequest, setRequest } = useFriendStore();
+    const { setFriendRequests, friends, setFriends, setFriend, setFriendRequest, setRequest, friendRequests } = useFriendStore();
     const { setRoom } = useSocketStore();
     const { setOpponentId } = useResultStore();
 
@@ -30,6 +30,7 @@ const useSocket = () => {
             setSocket(socket);
 
             socket.on("online_users",(users)=>{
+                console.log("Online Users:",users);
                 setOnlineUsers(users);
             });
 
@@ -38,8 +39,7 @@ const useSocket = () => {
             })
 
             socket.on("hasfriendRequest",(data)=>{
-                setFriendRequest(data);
-                console.log(friends);
+                setFriendRequests(data, true);
             });
 
             socket.on("hasAcceptRequest",({ notification, sender })=>{
@@ -58,8 +58,8 @@ const useSocket = () => {
             });
 
             socket.on("hasGameRequest",(data)=>{
-                setRequest(data);
-                setFriendRequests(data);
+                // setRequest(data);
+                setFriendRequests(data, true);
             });
 
             socket.on("new-accept-request",(data)=>{

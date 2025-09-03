@@ -12,7 +12,7 @@ const DrawRequestModal = () => {
   const { room } = useSocketStore();
   const {setGameResult} = useResultStore();
 
-  if (!drawRequest) return null;
+  // if (!drawRequest) return null;
 
   const acceptDraw = () => {
     socket.emit("drawAccepted",room);
@@ -22,7 +22,7 @@ const DrawRequestModal = () => {
   };
 
   return (
-    <div className="w-[70%] h-fit bg-opacity-70 flex justify-center items-center">
+    <div className="w-full h-fit bg-opacity-70 flex justify-center items-center mb-3">
       <div className="bg-secondaryVaraint text-white rounded-lg text-center w-96 p-2 items-center flex justify-between px-4">
         <h2 className="text-base font-bold">Wanna Draw?</h2>
         <div className="flex gap-3">

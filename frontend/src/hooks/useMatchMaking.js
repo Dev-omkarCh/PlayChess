@@ -9,7 +9,7 @@ export const useMatchmaking = () => {
     const { socket } = useMainSocket();
     const navigate = useNavigate();
     const { setMatchMaked, setOpponentId } = useResultStore();
-    const { setRoom, setPlayerColor } = useSocketStore();
+    const { setRoom, setPlayerColor, playerColor } = useSocketStore();
 
     const joinQueue = () => {
         socket.emit("joinQueue");
@@ -25,9 +25,9 @@ export const useMatchmaking = () => {
         });
 
         return () => {
-            socket.off("matchFound");
+            socket?.off("matchFound");
         };
-    }, [socket]);
+    }, [socket, playerColor]);
 
     return { joinQueue };
 };

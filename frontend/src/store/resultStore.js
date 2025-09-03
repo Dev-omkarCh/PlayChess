@@ -10,7 +10,7 @@ export const useResultStore = create((set) => ({
     opponent : null,
     setOpponent : (opponent) => set({ opponent : opponent }),
 
-    opponentId : "",
+    opponentId : "680472184cd6cc2efbf63c10",
     setOpponentId : (opponentId) => set({ opponentId }),
 
     result : null,

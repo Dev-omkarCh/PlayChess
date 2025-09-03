@@ -2,12 +2,13 @@ import { create } from "zustand";
 
 import { useMainSocket } from "./socketIoStore";
 import { useNavigate } from "react-router-dom";
+import { messageStore } from "./messageStore";
 
 const useSocketStore = create((set) => ({
   room: null,
   setRoom : (room) => set({ room : room }),
   isGameStarted: false,
-  playerColor: null, // Track whether the player is White or Black
+  playerColor: "white", // Track whether the player is White or Black
   setPlayerColor : (color) => set({ playerColor : color }),
 
   joinGame: (room) => {
@@ -21,8 +22,13 @@ const useSocketStore = create((set) => ({
     });
   },
 
-  getPlayerColor : (color) =>{
-    
+  messageListener : () =>{
+    const socket = useMainSocket.getState().socket;
+    console.log("called");
+    socket?.on("newMessage", (message)=>{
+      console.log("Recieved a message : ", message)
+      messageStore.getState().setMessages(message,true);
+    });
   },
 
   startGameListener: () => {
@@ -33,8 +39,10 @@ const useSocketStore = create((set) => ({
     socket?.on("startGame", () => {
       console.log("start")
       set({ isGameStarted: true });
-      navigate("/multiplayer");
+      navigate("/test");
     });
+
+
   },
 }));
 

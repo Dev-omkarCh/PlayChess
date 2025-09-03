@@ -36,7 +36,7 @@ router.put("/edit/profile", protectedRoute, updateProfile);
 router.get("/leaderboard",protectedRoute,getLeaderboard)
 
 router.post("/game/save",protectedRoute,saveGameDetails);
-router.get("/game/players/details/:id",protectedRoute,getBothPlayersDetails);
+router.post("/game/players/details",protectedRoute,getBothPlayersDetails);
 
 // Todo-optinal : Give a good name
 router.get("/friends",protectedRoute,getFriends);

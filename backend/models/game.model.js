@@ -16,6 +16,14 @@ const gameHistorySchema = new mongoose.Schema(
       type : Array,
       required : true
     },
+    board : {
+      type: Array,
+      default: [],
+    },
+    turn : {
+      type: String,
+      default: "white",
+    },
     moves : {
       white : [],
       black : []
@@ -24,16 +32,10 @@ const gameHistorySchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    //   white: {
-    //     type: Array,
-    //     default: [],
-    //   },
-    //   black: {
-    //     type: Array,
-    //     default: [],
-    //   },
-    // },
-
+    notations : {
+      white: [],
+      balck: [],
+    },
     maxTime: {
       type: Number,
       default: 0,
@@ -63,14 +65,7 @@ const gameHistorySchema = new mongoose.Schema(
       enum : ["checkmate","resign","draw","timeout"],
       required : true
     },
-    createdAt: {
-      type: Date,
-      default: Date.now,
-    },
-    endedAt: {
-      type: Date,
-      default: null,
-    },
+    
   },
   { timestamps: true }
 );

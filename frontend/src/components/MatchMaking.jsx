@@ -24,7 +24,7 @@ export default function Matchmaking() {
     // Dynamic Text Changes
 
     socket?.on("startRandomGame",(roomId)=>{
-        navigate("/multiplayer");
+        navigate("/test");
     })
 
     useEffect(()=>{

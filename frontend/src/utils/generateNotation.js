@@ -2,7 +2,7 @@ export function generateAlgebraicNotation(piece, fromRow, fromCol, toRow, toCol,
     const columns = "abcdefgh";
     // const from = columns[fromCol] + (8 - fromRow);
     const to = columns[toCol] + (8 - toRow);
-    const symbol = piece.type === "pawn" ? "" : piece.type[0].toUpperCase();
+    const symbol = piece?.type === "pawn" ? "" : piece?.type[0].toUpperCase();
 
     if (castling === "king-side") {
       return "O-O"; // King-side castling

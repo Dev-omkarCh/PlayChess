@@ -41,7 +41,7 @@ const Leaderboard = () => {
 
   return (
     <>
-    <button className="text-3xl m-5" onClick={()=> navigate("/profile")}><IoArrowBack /></button>
+    <button className="text-3xl m-5" onClick={()=> navigate(-1)}><IoArrowBack /></button>
     <div className="max-w-4xl mx-auto my-10">
       <h2 className="text-4xl font-bold text-center text-purple-500 mb-4 uppercase tracking-wider">
         Leaderboard

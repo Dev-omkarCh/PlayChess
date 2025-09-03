@@ -14,20 +14,26 @@ import SettingsModal from "../components/Settings";
 import { useFriend } from './../hooks/useFriend';
 import useAdmin from "../store/useAdmin";
 import { MdSpaceDashboard } from "react-icons/md";
+import useGameExists from "@/hooks/useGameExists";
+import LogoutConfirmationDialog from "@/components/LogoutConfirmationDialog";
+import { useMainSocket } from "@/store/socketIoStore";
+import GameChatDialog from "@/components/ChatDailog";
+import { ChatPopOverMenu } from "@/ChatPopOverMenu";
 
 export default function PlayMenu() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const { authUser, setAuthUser} = useAuth();
   const navigate = useNavigate()
-  const { loading, logout } = useLogout();
-  const { settingsModal, openSettingsModal } = useSettingStore();
+  const { logout } = useLogout();
   const { checkIfIsAdmin } = useFriend();
   const { isAdmin } = useAdmin();
+  const { checkIfGameExists } = useGameExists();
+  const [open, setOpen] = useState(false);
   
   // TODO : Connection Point
   // useSocket();
   useEffect(()=>{
     checkIfIsAdmin();
+    checkIfGameExists();
   },[])
 
   const handleSendToProfile = () => {
@@ -35,7 +41,8 @@ export default function PlayMenu() {
   };
 
   const handleLogout = () => {
-    logout();
+    // logout();
+    setOpen(true);
   }
 
   return (
@@ -124,6 +131,12 @@ export default function PlayMenu() {
           className="w-[90%] p-1 object-contain rounded-lg border-2 border-sectionBorder"
         />
       </div>
+      {/* <GameChatDialog /> */}
+      <LogoutConfirmationDialog
+        open={open}
+        onConfirm={() =>logout()}
+        onCancel={() => setOpen(false)}
+      />
     </div>
   );
 }

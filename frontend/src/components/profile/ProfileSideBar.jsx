@@ -8,7 +8,7 @@ import { FaEdit } from "react-icons/fa";
 import { TfiMoreAlt } from "react-icons/tfi";
 import { getRandomColor } from '../../utils/randomColorGenerator';
 import { MdLeaderboard } from "react-icons/md";
-import Test from "../../Test"
+// import Test from "../../Test"
 import useFriendStore from "../../store/useFriendStore";
 import { SiChessdotcom } from "react-icons/si";
 import { useNavigate } from "react-router-dom";
@@ -40,11 +40,6 @@ const ProfileSideBar = () => {
   return (
       <div className="w-1/4 h-full p-5 overflow-y-hidden bg-primary">
         <button className="text-3xl" onClick={()=> navigate("/menu")}><IoArrowBack /></button>
-         <Test 
-              isOpen={isOpen} 
-              onClose={() => setIsOpen(false)}
-              user={user}
-               />
               {/*  */}
               <div className="flex justify-center items-center gap-5">
                 <div className={`h-fit w-fit ml-5 rounded-full mb-4 ${getRandomColor()} border-4 border-sectionBorder`}>

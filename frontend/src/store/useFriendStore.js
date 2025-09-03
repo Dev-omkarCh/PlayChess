@@ -10,9 +10,19 @@ const useFriendStore = create((set) => ({
     setFriend: (friend) => set((state) => ({ friends: [...state.friends, friend] })),
     
     friendRequests: [],
-    setFriendRequests: (requests) => set({ friendRequests: requests }),
+    setFriendRequests: (requests, isOne=false) => set((state)=>{
+        // friend -> {} -> { ...requests }
+        // game -> [] -> ...requests
+        if(isOne){
+            if(requests?.from){
+                return { friendRequests : [...state.friendRequests, { ...requests }] }
+            }
+            return { friendRequests : [...state.friendRequests, ...requests ] }
+        } 
+        return { friendRequests : requests}
+    }),
 
-    setFriendRequest: (request) => set((state) => ({ friendRequests: [...state.friendRequests, request] })),
+    // setFriendRequest: (request) => set((state) => ({ friendRequests: [...state.friendRequests, request] })),
 
     gameRequests : [],
     users : [],
