@@ -5,7 +5,7 @@ import useSettingStore from '../store/settingStore';
 
 import LeftBoardSection from '../pages/MutiplayerGame/LeftBoardSection';
 import RightMovesSection from '../pages/MutiplayerGame/RightMovesSection';
-import ResultModel from '../Test/ResultModel';
+import ResultModel from '../test/ResultModel';
 import useSocketStore from '../store/socketStore';
 import { useMatchmaking } from '../hooks/useMatchMaking';
 import WaitingScreen from '../components/WaitingScreen';
