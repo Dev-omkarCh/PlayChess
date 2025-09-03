@@ -15,7 +15,7 @@ export default defineConfig({
     port : 3000,
     proxy : {
       "/api" : {
-        target : import.meta.env.MODE === "development" ? "http://localhost:4000": "/api",
+        target : import.meta.env.NODE_ENV === "production" ? "": "http://localhost:4000",
       },
     }
   },
