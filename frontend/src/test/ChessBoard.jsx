@@ -20,6 +20,7 @@ const ChessBoard = () => {
     <div className="w-full h-full shadow-lg grid grid-cols-8 grid-rows-8 border border-[#333]">
       {boardToRender?.map((row, rowIndex) =>
         row?.map((square, colIndex) => {
+
           // Flip row index if player is black
           const adjustedRowIndex = playerColor === "black" ? 7 - rowIndex : rowIndex;
 
@@ -35,14 +36,6 @@ const ChessBoard = () => {
             }),
           }));
 
-          // let sqaureInSuggestion = [];
-          // if (suggestedMoves.length > 0) {
-          //   sqaureInSuggestion = suggestedMoves?.filter((cell) => {
-          //     if (cell.row === rowIndex && cell.col === colIndex) return cell
-          //   });
-          // };
-
-          // const isSuggestedSquare = sqaureInSuggestion.length > 0 ? true : false;
           const sqaureInSuggestion = suggestedMoves.filter(move =>{
             if(move?.row === rowIndex && move?.col === colIndex){
               return move;
@@ -61,15 +54,7 @@ const ChessBoard = () => {
               onClick={() => {
                 selectPiece(adjustedRowIndex,colIndex);
                 movePieceByClick(adjustedRowIndex, colIndex)
-              }}
-
-              // onMouseDown={(e) => {
-              //   if(e.button === 2){
-              //     console.log(isRed)
-              //     setIsRed(true);
-              //   }
-              // }}
-              
+              }}             
               
               className={`max-w-18 max-h-18 flex items-center justify-center relative
                 ${squareName} 

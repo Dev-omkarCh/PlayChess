@@ -28,7 +28,8 @@ io.on("connection", (socket) => {
 
   const userId = socket.handshake.query?.userId;
 
-  console.log("New player connected:", socket.id);
+  console.log("New player connected: ", socket.id);
+  console.log("user Id: ", userId);
 
   if(userId){
     userSocketMap[userId] = socket.id;
@@ -42,6 +43,7 @@ io.on("connection", (socket) => {
   
   // Handle joining a game room
   socket.on("joinGame", (room) => {
+    console.log("JoinGame");
     socket.join(room);
 
     if (!gameRooms[room]) gameRooms[room] = [];
@@ -148,9 +150,8 @@ io.on("connection", (socket) => {
   })
 
   socket.on("game-request",({ id, notification})=>{
-    const newNotification = [notification]
     const socketId = userSocketMap[id];
-    socket.to(socketId).emit("hasGameRequest",newNotification);
+    socket.to(socketId).emit("hasGameRequest",notification);
   });
 
   socket.on("accept-game-request",({ id, notification, userId})=>{

@@ -22,7 +22,6 @@ import InviteFriend from './pages/InviteFriend.jsx';
 
 import useSocket from './hooks/useSocket.js';
 import LeaderBoard from './components/LeaderBoard.jsx';
-import useFriendStore from './store/useFriendStore.js';
 import MatchMaking from './components/MatchMaking.jsx';
 
 import SettingsModal from './components/Settings.jsx';
@@ -31,6 +30,7 @@ import GameAnalytics from './pages/GameAnalytics.jsx';
 import useAdmin from './store/useAdmin.js';
 import TestOnlineChess from './test/TestOnlineChess.jsx';
 import { ToastProvider} from './components/ToastProvider.jsx';
+import Test from './pages/Test.jsx';
 
 
 const App = () => {
@@ -59,6 +59,7 @@ const App = () => {
           <Route path="/puzzle" element={<PuzzleCard />} />
           <Route path="/settings" element={<SettingsModal />} />
           <Route path='/test' element={authUser ? <TestOnlineChess /> : <Navigate to={"/login"} />} />
+          {/* <Route path='/test' element={<Test />} /> */}
           <Route path='/design' element={authUser ? <MultiplayerGame /> : <Navigate to={"/login"} />} />
           <Route path='/admin' element={authUser && isAdmin ? <GameAnalytics /> : <Navigate to={"/login"}/>} />
       </Routes>

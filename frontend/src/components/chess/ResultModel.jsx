@@ -15,7 +15,6 @@ import { useResultStore } from '../../store/resultStore';
 const ResultModel = () => {
 
   const { authUser } = useAuth();
-  // const { opponent } = useFriendStore();
   const { closeGameOverModal, setNotation } = useChessStore();
   const { joinGame, isGameStarted, startGameListener, gameOver, playerColor } = useSocketStore();
   const { room } = useSocketStore();

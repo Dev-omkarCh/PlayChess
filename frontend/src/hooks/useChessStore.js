@@ -8,6 +8,7 @@ import { playChessSound } from "../utils/playChessSound";
 import { useResultStore } from "../store/resultStore";
 import { generateAlgebraicNotation } from "../utils/generateNotation";
 import useTurn from "../store/turnStore";
+import clearChessData from "@/utils/clearChessData";
 
 const useChessStore = () => {
 
@@ -216,12 +217,14 @@ const useChessStore = () => {
         socket.on("resigned", (room) => {
             setGameResult("win", "resign");
             openGameOverModal(true);
+            clearChessData();
             return { board, turn, selectedPiece: null, suggestedMoves: [] }
         });
 
         socket.on("checkmate", (room) => {
             setGameResult("lose", "checkmate");
             openGameOverModal(true);
+            clearChessData();
             return { board: initialBoard(), turn: "white", selectedPiece: null, suggestedMoves: [] }
         });
 
@@ -233,6 +236,7 @@ const useChessStore = () => {
         socket.on("drawResult", (room) => {
             setGameResult("draw", "draw");
             openGameOverModal(true);
+            clearChessData();
             return { board, turn, selectedPiece: null, suggestedMoves: [] }
         });
 

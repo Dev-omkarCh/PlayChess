@@ -25,7 +25,7 @@ const Friends = ({ friend }) => {
 
       {/* Profile Image */}
         <div className={` w-12 h-12 rounded-full overflow-hidden ${getRandomColor()} flex items-center justify-center`}>
-          <ProfileImage user={friend} invalidateImage />
+          <ProfileImage user={friend} />
           <StatusIndicator isOnline={isOnline} />
         </div>
 

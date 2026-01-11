@@ -5,11 +5,13 @@ import {} from "react-icons/fa6";
 import {} from "react-icons/io";
 import { IoArrowBack } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
+import { useAuthContext } from "@/context/AuthContext";
 
 const Leaderboard = () => {
   const navigate = useNavigate();
-  const {authUser} = useAuth();
-  const userId = authUser._id;
+  const context = useAuthContext();
+  const authUser = context?.authUser;
+  const userId = authUser?._id;
   
   const [leaderboard, setLeaderboard] = useState([]);
   const [yourRank, setYourRank] = useState(null);
@@ -21,9 +23,9 @@ const Leaderboard = () => {
         const res = await axios.get(
           "/api/users/leaderboard"
         );
-        setLeaderboard(res.data.leaderboard);
-        setYourRank(res.data.yourRank);
-        setYourElo(res.data.yourElo);
+        setLeaderboard(res.data?.leaderboard);
+        setYourRank(res.data?.yourRank);
+        setYourElo(res.data?.yourElo);
       } catch (error) {
         console.error("Error fetching leaderboard:", error);
       }
@@ -59,9 +61,9 @@ const Leaderboard = () => {
           <tbody>
             {leaderboard.map((player, index) => (
               <tr
-                key={player._id}
+                key={player?._id}
                 className={`transition-all duration-300 ${
-                  player._id === userId
+                  player?._id === userId
                     ? "bg-[#ffcc00] text-black font-bold animate-glow"
                     : getRankBadge(index)
                 } hover:bg-purple-800`}
@@ -69,8 +71,8 @@ const Leaderboard = () => {
                 <td className="py-3 text-center">
                   {index + 1 === 1 ? "🥇" : index + 1 === 2 ? "🥈" : index + 1 === 3 ? "🥉" : index + 1}
                 </td>
-                <td className="text-left text-white pl-4 font-bold capitalize">{player.username}</td>
-                <td className="text-center font-semibold text-[#82aaff]">{player.elo}</td>
+                <td className="text-left text-white pl-4 font-bold capitalize">{player?.username}</td>
+                <td className="text-center font-semibold text-[#82aaff]">{player?.elo}</td>
               </tr>
             ))}
           </tbody>

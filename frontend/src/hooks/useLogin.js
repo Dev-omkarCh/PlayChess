@@ -2,36 +2,39 @@ import React, { useState } from 'react'
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import useAuth from '../store/useAuth';
+import axios from 'axios';
+import useAuthStore from '@/store/authStore';
 
 const useLogin = () => {
 
     const [ loading, setLoading ] = useState(false);
     const navigate = useNavigate();
-    const { setAuthUser } = useAuth();
+    const { setAuthUser, setIsAuthenticated } = useAuthStore();
     
     const login = async({ username, password }) => {
 
         setLoading(true);
         const success = validation( username, password );
-        if(!success) return setLoading(false);
+        if(!success) {
+            setLoading(false);
+            return;
+        }
 
         try{
-            const res = await fetch(`/api/auth/login`,{
-                method : "POST",
-                headers : { "Content-Type": "application/json"},
-                body : JSON.stringify({ username, password })
+            const response = await axios.post("/api/auth/login",{ 
+                username, password
             });
-            const data = await res.json();
-            if(data.error) return toast.error(data.error);
 
-            // localStorage
-            localStorage.setItem("Chess-User",JSON.stringify(data));
-            //context
+            const data = response.data;
+
             setAuthUser(data);
+            setIsAuthenticated(true);
             navigate("/menu");
         }
-        catch(e){
-            toast.error(e.message);
+        catch(error){
+            const errorMessage = error.response?.data?.message || "Something went wrong";
+            console.error("Error:", error);
+            toast.error(errorMessage);
         }
         finally{
             setLoading(false);

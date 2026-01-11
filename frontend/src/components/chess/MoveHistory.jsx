@@ -5,9 +5,9 @@ import useChessStore from "@/store/chessStore";
 import useSocketStore from "../../store/socketStore";
 
 import { useMainSocket } from "../../store/socketIoStore";
-import DrawRequestModal from "@/components/chess/DrawRequestModal";
 import clearChessData from "@/utils/clearChessData";
 import { useResultStore } from "@/store/resultStore";
+import { useSocketContext } from "@/context/SocketContext";
 
 
 const MoveHistory = () => {
@@ -15,10 +15,9 @@ const MoveHistory = () => {
     const { notation, openGameOverModal, resetBoard, drawRequest } = useChessStore();
     const scrollRef = useRef();
     const { room } = useSocketStore();
-    const { socket } = useMainSocket();
+    const socket = useSocketContext();
 
     const handleResign = () => {
-      const socket = useMainSocket.getState().socket;
       const setGameResult = useResultStore.getState().setGameResult;
       const room = useSocketStore.getState().room;
 
