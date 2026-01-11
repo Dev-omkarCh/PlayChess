@@ -4,7 +4,7 @@
   "description": "A platform where players can play chess with each other",
   "main": "backend/server.js",
   "scripts": {
-    "server": "nodemon backend/server.js",
+    "dev": "nodemon backend/server.js",
     "start": "node backend/server.js",
     "build": "npm install && npm install --prefix frontend && npm run build --prefix frontend"
   },

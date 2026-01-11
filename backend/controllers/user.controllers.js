@@ -41,19 +41,25 @@ export const addFriend = async(req, res) =>{
         
         // Check if the user exists
         const reqExists = await Notifications.findOne({ from: req.user._id, to: id , type: "friend-request", isRead: false });
-        if(reqExists) return res.json({ msg: "You have already send a request, and not yet Accepted" });
+        if(reqExists) return res.json({ message: "You have already send a request, and not yet Accepted" });
 
         if (!user.friends.includes(id)) {
-            const notification = await Notifications.create({
+            const newNotification = await Notifications.create({
                 to : id,
                 from : req.user._id,
                 type : "friend-request",
                 message : `${user.username} sent you a friend request`,
             });
 
-            res.json({ msg: "Request send Successfully", notification });
+            const notification = {
+                ...newNotification.toObject(),
+                senderName: user.username,
+                profileImg: user.profileImg,
+            }
+
+            res.json({ message: "Request send Successfully", notification });
         } else {
-            res.json({ msg: "Already had send the friend request" });
+            res.json({ message: "Already had send the friend request" });
         }
     } 
     catch (e) {
@@ -166,15 +172,20 @@ export const acceptGameRequest = async(req,res) =>{
         const { id } = req.params;
         const user = await User.findById(req.user._id);
 
-        if(!id) return res.status(400).json({ error : "Invalid User ID" });
+        if(!id) return res.status(400).json({ message : "Invalid User ID" });
 
         if (user.friends.includes(id)) {
             
-            const validRequest = await Notifications.findOne({ from : id, to : req.user._id, type : "game-request", isRead : false });
+            const validRequest = await Notifications.findOne({ 
+                from : id, 
+                to : req.user._id, 
+                type : "game-request", 
+                isRead : false 
+            });
 
             // check if notification exits in database
             if (!validRequest) {
-                return res.status(400).json({ error: "Invalid Request" });
+                return res.status(400).json({ message : "Invalid Request" });
             };
 
             // Mark the request as read
@@ -195,12 +206,12 @@ export const acceptGameRequest = async(req,res) =>{
             });
         } 
         else {
-            return res.json({ message: "Can't Accept!, you are not friends" });
+            return res.json({ message : "Can't Accept!, you are not friends" });
         };
     }
     catch (error) {
         console.log("Error in acceptGameRequest Controller", error.message);
-        res.status(500).json({ error: "Internal Server Error" });     
+        res.status(500).json({ message : "Internal Server Error" });     
     };
 };
 
@@ -209,19 +220,18 @@ export const acceptGameRequest = async(req,res) =>{
 export const acceptFriend = async(req, res) =>{
     try {
         const { id } = req.params;
-        console.log(id);
+
         const user = await User.findById(req.user._id);
         const sender = await User.findById(id);
 
-        if(!sender) return res.status(400).json({ error: "Invalid Id" });
+        if(!sender) return res.status(400).json({ message: "Invalid Id" });
         
         // TODO : Check in database that is it makes the notification read
         const validRequest = await Notifications.findOne({ from : id, to : req.user._id, type : "friend-request", isRead : false });
         
         if (!validRequest) {
-            return res.status(400).json({ error: "Invalid Request" });
+            return res.status(400).json({ message: "Invalid Request" });
         }
-
         
         if (!user.friends.includes(id)) {
 
@@ -241,14 +251,15 @@ export const acceptFriend = async(req, res) =>{
                 type : "accepted-friend-request",
                 message : `${user.username} accepted your friend request`,
             });
-            res.json({ msg: "Friend Request Accepted", notification, user, sender });
+
+            res.json({ message: "Friend Request Accepted", notification, user, sender });
         } else {
-            res.json({ msg: "You are ALready friends" });
+            res.json({ message: "You are ALready friends" });
         }
     } 
     catch (e) {
         console.log("Error in acceptFriend Controller", e.message);
-        res.status(500).json({ error: "Internal Server Error" });
+        res.status(500).json({ message: "Internal Server Error" });
         
     }
 };
@@ -259,10 +270,10 @@ export const sendGameRequest = async(req,res) =>{
         const { id } = req.params;
         const user = await User.findById(req.user._id);
 
-        if(!id) return res.status(400).json({ error: "Invalid User ID" });
+        if(!id) return res.status(400).json({ message: "Invalid User ID" });
 
         const friend = await User.findById(id);
-        if (!friend) return res.status(404).json({ error: "friend not found" });
+        if (!friend) return res.status(404).json({ message: "friend not found" });
 
         if (user.friends.includes(id)) {
 
@@ -273,16 +284,22 @@ export const sendGameRequest = async(req,res) =>{
 
             if(notificationAlreadyExists){
                 console.log("You have already sent a game request to this friend");
-                return res.status(400).json({ error: `You have already sent a game request to ${friend.username}` });
+                return res.status(400).json({ message: `You have already sent a game request to ${friend.username}` });
             };
         
-            const notification = await Notifications.create({
+            const newNotification = await Notifications.create({
                 to : id,
                 from : req.user._id,
                 type : "game-request",
                 gameId : gameId,
                 message : `${user.username} sent you a game request`,
             });
+
+            const notification = {
+                ...newNotification.toObject(),
+                senderName : user.username,
+                profileImg: user.profileImg
+            }
 
             res.json({ message : "Game Request send Successfully", notification});
         } else {

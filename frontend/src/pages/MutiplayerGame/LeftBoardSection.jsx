@@ -7,11 +7,12 @@ import { useFriend } from "../../hooks/useFriend";
 import { useMainSocket } from "../../store/socketIoStore";
 import useChessStore from "../../hooks/useChessStore";
 import NavigateBack from "@/components/NavigateBack";
+import { useSocketContext } from "@/context/SocketContext";
 
 const LeftBoardSection = () => {
 
     const { you, opponent } = useResultStore();
-    const { socket } = useMainSocket();
+    const socket = useSocketContext();
     const { getBothPlayersDetails } = useFriend();
     const { setPlayerColor, turn } = useChessStore();
 

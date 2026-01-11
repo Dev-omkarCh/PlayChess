@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 
 const useGameExists = () => {
 
-    const { showToast } = useToast();
+    // const { showToast } = useToast();
     const { socket } = useMainSocket();
     const setGameResult = useResultStore.getState().setGameResult;
     const room = useSocketStore.getState().room;

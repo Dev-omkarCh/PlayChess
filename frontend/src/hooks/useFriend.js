@@ -7,11 +7,13 @@ import { useResultStore } from "../store/resultStore";
 import useAuth from "../store/useAuth";
 import useChessStore from "../store/chessStore";
 import useAdmin from "../store/useAdmin";
+import { useSocketContext } from "@/context/SocketContext";
+import axios from "axios";
 
 export const useFriend = () => {
 
-    const { socket } = useMainSocket();
-    const { friendRequests, setFriendRequests, setGameRequests, friends, setFriends, setGameId, setUser, setHistory, setUsers,setFriend, setGameStatus  } = useFriendStore();
+    const socket = useSocketContext();
+    const { friendRequests, setFriendRequests, setGameRequests, friends, setFriends, setGameId, setUser, setHistory, setUsers, setFriend, setGameStatus } = useFriendStore();
     const { isGameStarted, startGameListener } = useSocketStore();
     const { joinGame } = useRoom();
     const { authUser } = useAuth();
@@ -21,42 +23,42 @@ export const useFriend = () => {
     const { playerColor, setPlayerColor } = useSocketStore();
     const { room } = useSocketStore();
 
-    
-    const saveGame = async (newRating, ratingCal) =>{
-        
+
+    const saveGame = async (newRating, ratingCal) => {
+
         const white = playerColor === "white" ? you._id : opponent._id;
         const black = playerColor === "black" ? you._id : opponent._id;
         const opponentColor = playerColor === "white" ? "black" : "white";
-        
+
         const won = [];
-        const moves = { white : [], black : []};
+        const moves = { white: [], black: [] };
         const roomId = room;
         const maxTime = 0;
-        const rating = { 
+        const rating = {
             white: { before: 0, after: 0 },
             black: { before: 0, after: 0 },
         }
-        
-        if(result === "win") won.push(playerColor);
-        else if(result === "draw") { 
+
+        if (result === "win") won.push(playerColor);
+        else if (result === "draw") {
             won.push(playerColor);
             won.push(opponentColor);
         }
 
-        if(playerColor === "white"){
+        if (playerColor === "white") {
             // notation
             moves.white.push(notation.you);
             moves.black.push(notation.opponent);
             // rating
-            
+
             rating.white.before = you.elo;
             rating.black.before = opponent.elo;
-            
-            if(result === "draw") {
+
+            if (result === "draw") {
                 rating.white.after = you.elo;
                 rating.black.after = opponent.elo;
             }
-            else{
+            else {
                 rating.white.after = newRating;
                 rating.black.after = opponent.elo - Math.abs(ratingCal);
             }
@@ -64,25 +66,25 @@ export const useFriend = () => {
             // if(newRating > opponent.elo) rating.black.after = opponent.elo - Math.abs(ratingCal);
             // else if(newRating < opponent.elo) rating.black.after = opponent.elo;
         }
-        else if(playerColor === "black"){
+        else if (playerColor === "black") {
             // notation
             moves.black.push(notation.you);
             moves.white.push(notation.opponent);
-            
+
             // rating
             // before
             rating.black.before = you.elo;
             rating.white.before = opponent.elo;
-            
-            if(result === "draw") {
+
+            if (result === "draw") {
                 rating.black.after = you.elo;
                 rating.white.after = opponent.elo;
             }
-            else{
+            else {
                 rating.black.after = newRating;
                 rating.white.after = opponent.elo - Math.abs(ratingCal);
             }
-            
+
             // for Black
             // if(newRating > opponent.elo) rating.white.after = opponent.elo - ratingCal;
             // else rating.white.after = opponent.elo;
@@ -90,14 +92,14 @@ export const useFriend = () => {
 
         const response = await fetch(`/api/users/game/save`, {
             method: "POST",
-            body: JSON.stringify({white, black, won, moves, roomId, maxTime, rating, type}),
+            body: JSON.stringify({ white, black, won, moves, roomId, maxTime, rating, type }),
             headers: { "Content-Type": "application/json" },
         });
         const data = await response.json();
         toast.success(data.msg);
         return data;
     }
-    
+
     const getFriendRequests = async () => {
         const response = await fetch("/api/users/requests", {
             method: "GET",
@@ -108,7 +110,7 @@ export const useFriend = () => {
         setFriendRequests(data);
         return data;
     };
-    
+
     const getGameRequests = async () => {
         const response = await fetch("/api/users/game/get", {
             method: "GET",
@@ -117,7 +119,7 @@ export const useFriend = () => {
         const data = await response.json();
         setGameId(data?.gameId);
 
-        if(data?.length !== 0) setFriendRequests(data);
+        if (data?.length !== 0) setFriendRequests(data);
         return data;
     }
 
@@ -135,27 +137,31 @@ export const useFriend = () => {
     };
 
     const sendFriendRequest = async (receiverId) => {
-        const response = await fetch(`/api/users/send/friend-request/${receiverId}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-        });
-        const data = await response.json();
-        if(!data.notification){
-            toast.error(data.msg);
+        try {
+            const response = await axios.post(`/api/users/send/friend-request/${receiverId}`);
+            const data = response.data;
+            if (!data.notification) {
+                toast.error(data.message);
+                return;
+            }
+            toast.success(data.message);
+            socket.emit("friend-request", { receiverId, notification: data.notification });
+            return;
+
+        } catch (error) {
+            console.error(error.response?.data?.message || "Something went wrong");
+            toast.error(error.response?.data?.message || "Something went wrong");
             return;
         }
-        toast.success(data.msg);
-        socket.emit("friend-request", { receiverId, notification: data.notification });
-        return data;
     };
 
-    const markAllMessagesAsRead = async() =>{
+    const markAllMessagesAsRead = async () => {
         const data = await fetch(`/api/users/notifications/read`, {
             method: "PUT",
             headers: {
-              "Content-Type": "application/json",
+                "Content-Type": "application/json",
             },
-          });
+        });
         const res = await data.json();
         toast.success(res.msg);
     }
@@ -170,7 +176,7 @@ export const useFriend = () => {
                 headers: { "Content-Type": "application/json" },
             });
             const data = await response.json();
-            if(!response.ok) return toast.error(data?.message);
+            if (!response.ok) return toast.error(data?.message);
 
             // optional
             console.log(`Friend Request Declined of ${data?.from}`);
@@ -189,7 +195,7 @@ export const useFriend = () => {
                 headers: { "Content-Type": "application/json" },
             });
             const data = await response.json();
-            if(!response.ok) return toast.error(data?.message);
+            if (!response.ok) return toast.error(data?.message);
 
             // optional
             console.log(`Game Request Declined of ${data?.from}`);
@@ -202,73 +208,64 @@ export const useFriend = () => {
 
     const sendGameRequest = async (receiverId) => {
         try {
-            const response = await fetch(`/api/users/game/send/${receiverId}`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-            });
+            const response = await axios.post(`/api/users/game/send/${receiverId}`);
 
-            const data = await response.json();
-            if(!response.ok) throw new Error(data?.error);
-            
+            const data = response.data;
+
             setGameId(data?.notification.gameId);
             joinGame(data?.notification.gameId);
-            socket.emit("game-request", { id : receiverId, notification:  data.notification});
 
-            console.log(data?.message);
+            socket.emit("game-request", { id: receiverId, notification: data.notification });
             toast.success(data?.message);
-            
+
             return data;
 
         } catch (error) {
-
-            console.error(error.message);
-            toast.error(error.message);  
+            const message = error.response?.data?.message
+            console.error(message || "Something went wrong");
+            toast.error(message || "Something went wrong");
         }
     };
 
     const acceptFriendRequest = async (requestId) => {
 
-        // 1. sets other friends data/ opponent into `friends` state in zustand store(useFriendStore)
-        // 2. sends a socket event of `accept-friend-request` to start the game on other players screen
-        
         try {
-            const response = await fetch(`/api/users/send/accept-request/${requestId}`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-            });
-            const data = await response.json();
-            if(!response.ok) throw new Error(data?.error);
+            const response = await axios.post(`/api/users/send/accept-request/${requestId}`);
+            const data = response.data;
 
             setFriend(data?.sender);
-            socket?.emit("accept-friend-request", { requestId, notification: data?.notification, sender : data?.user });
-
-            // optional
-            console.log("Accepted Game Request Successfully");
+            socket?.emit("accept-friend-request", { requestId, notification: data?.notification, sender: data?.user });
             toast.success(data?.message);
-            
-        } catch (error) {
 
-            // optional
-            console.error(error.message);
-            toast.error(error.message);
+        } catch (error) {
+            console.error(error.response?.data?.message || "Something went wrong");
+            toast.error(error.response?.data?.message || "Something went wrong");
+            return;
         };
     };
 
-    // end
-
     const acceptGameRequest = async (requestId) => {
-        const data = await fetch(`/api/users/game/accept/${requestId}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-        });
-        const response = await data.json();
-        toast.success(response.msg);
+        try {
+            const response = await axios.post(`/api/users/game/accept/${requestId}`);
+            const data = response.data;
+            toast.success(data?.message);
 
-        setGameId(response?.notification.gameId);
-        joinGame(response?.notification.gameId);
-        setOpponentId(requestId);
-        
-        socket.emit("accept-game-request", { id : requestId, notification:  response.notification, userId : authUser._id});
+            setGameId(data?.notification.gameId);
+            joinGame(data?.notification.gameId);
+            setOpponentId(requestId);
+
+            socket.emit("accept-game-request", { 
+                id: requestId, 
+                notification: data.notification, 
+                userId: authUser._id 
+            });
+            return;
+
+        } catch (error) {
+            console.error(error.response?.data?.message || "Something went wrong");
+            toast.error(error.response?.data?.message || "Something went wrong");
+            return;
+        }
     };
 
     const getAllUsres = async () => {
@@ -279,24 +276,24 @@ export const useFriend = () => {
         setUsers(response.users);
     };
 
-    const getBothPlayersDetails = async () =>{
+    const getBothPlayersDetails = async () => {
         const response = await fetch(`/api/users/game/players/details`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body : JSON.stringify({ id: opponentId }),
+            body: JSON.stringify({ id: opponentId }),
 
         });
         const data = await response.json();
-        if(!data.you && !data.opponent){
+        if (!data.you && !data.opponent) {
             toast.error("Can't get data of both Players");
-            return; 
+            return;
         }
         setYou(data?.you);
         setOpponent(data?.opponent);
-        
+
     };
 
-    
+
 
     const friendRequestListener = () => {
         if (!socket) return;
@@ -315,7 +312,7 @@ export const useFriend = () => {
         });
         const response = await data.json();
         console.log(response)
-        if(!response) return response;
+        if (!response) return response;
         setHistory(response.gameHistory);
         setUser(response.user);
     };
@@ -324,30 +321,30 @@ export const useFriend = () => {
         const data = await fetch(`/api/users/edit/profile`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
-            body : JSON.stringify({ username, email, oldPassword, newPassword }),
-            
+            body: JSON.stringify({ username, email, oldPassword, newPassword }),
+
         });
         const response = await data.json();
     };
 
-    const markMessageAsRead = async(id) =>{
+    const markMessageAsRead = async (id) => {
         const data = await fetch(`/api/users/notification/read/${id}`, {
             method: "POST",
             headers: {
-              "Content-Type": "application/json",
+                "Content-Type": "application/json",
             },
-          });
+        });
         const res = await data.json();
         toast.success(res.msg);
     }
 
-    const checkIfGameIsReloaded = async(roomId, playerColor)=>{
+    const checkIfGameIsReloaded = async (roomId, playerColor) => {
         const data = await fetch(`/api/users/game/check/`, {
             method: "GET",
         });
         const res = await data.json();
         console.log("data :", res.gameStatus);
-        if(res.gameStatus){
+        if (res.gameStatus) {
             localStorage.setItem("gameStatus", JSON.stringify(res.gameStatus));
             // setGameStatus(res.gameStatus);
             toast.success(res.msg);
@@ -357,28 +354,28 @@ export const useFriend = () => {
         return;
     }
 
-    const checkIfIsAdmin = async()=>{
+    const checkIfIsAdmin = async () => {
         try {
-           const data = await fetch(`/api/users/admin`, {
+            const data = await fetch(`/api/users/admin`, {
                 method: "GET",
             });
             const res = await data.json();
             setIsAdmin(res.isAdmin);
-            return; 
+            return;
         } catch (error) {
             console.error("Something went wrong")
         }
-        
+
     }
 
-    return { 
-        friendRequestListener, 
-        getFriendRequests, 
-        getAllFriendsList, 
-        sendFriendRequest, 
-        acceptFriendRequest, 
-        declineFriendRequest, 
-        getGameRequests, 
+    return {
+        friendRequestListener,
+        getFriendRequests,
+        getAllFriendsList,
+        sendFriendRequest,
+        acceptFriendRequest,
+        declineFriendRequest,
+        getGameRequests,
         sendGameRequest,
         acceptGameRequest,
         declineGameRequest,

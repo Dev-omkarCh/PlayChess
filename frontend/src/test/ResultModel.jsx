@@ -10,6 +10,7 @@ import { useFriend } from '../hooks/useFriend';
 import { useMainSocket } from '../store/socketIoStore';
 import { useResultStore } from '../store/resultStore';
 import clearChessData from '@/utils/clearChessData';
+import { useSocketContext } from '@/context/SocketContext';
 
 
 const ResultModel = () => {
@@ -22,7 +23,7 @@ const ResultModel = () => {
   const { result, type, opponent, you } = useResultStore();
   const { saveGame } = useFriend();
   const { newRating, isRise, ratingCal } = calculateElo(you?.elo,opponent?.elo,result);
-  const { socket } = useMainSocket();
+  const socket= useSocketContext();
 
   const clearGameData = () => {
 

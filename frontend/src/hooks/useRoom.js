@@ -1,8 +1,8 @@
-import { useMainSocket } from "../store/socketIoStore";
+import { useSocketContext } from "@/context/SocketContext";
 import useSocketStore from "../store/socketStore";
 
 export const useRoom = () => {
-   const { socket } = useMainSocket();
+   const socket = useSocketContext();
    const { setRoom, setPlayerColor } = useSocketStore();
    const joinGame = (room) => {
         

@@ -10,6 +10,8 @@ import { useFriend } from "../hooks/useFriend";
 import useSocketStore from "../store/socketStore";
 import { useResponsiveStore } from "../store/responsiveStore";
 import useGameExists from "@/hooks/useGameExists";
+import { useAppNavigator } from "@/hooks/useAppNavigator";
+import { useSocketContext } from "@/context/SocketContext";
 
 
 export default function FriendsSidebar() {
@@ -22,12 +24,29 @@ export default function FriendsSidebar() {
   const { WIDTH } = useResponsiveStore();
   const [isOpen, setIsOpen] = useState(true);
   const { checkIfGameExists } = useGameExists();
+  const socket = useSocketContext();
+  const { replaceWith } = useAppNavigator();
 
-  startGameListener();
+  useEffect(() => {
+    if (!socket) return;
 
+    const handleStartGame = () => {
+      console.log("Game Started 🚀🥳");
+      localStorage.setItem("isGameActive", "true");
+
+      // Don't Allow users to go back to invite page during game
+      replaceWith("/game/multiplayer");
+    };
+
+    socket.on("startGame", handleStartGame);
+
+    return () => {
+      socket?.off("startGame");
+    };
+  }, [socket, replaceWith]);
 
   const handleResize = () => {
-    if(width > 700  && !isOpen){
+    if (width > 700 && !isOpen) {
       console.log("yes")
       setIsOpen(true);
     }
@@ -52,9 +71,9 @@ export default function FriendsSidebar() {
     <div className="h-[100dvh] w-[100dvw] flex bg-primary">
 
       {
-         <SideBar width={width} isOpen={isOpen} setIsOpen={setIsOpen} />
+        <SideBar width={width} isOpen={isOpen} setIsOpen={setIsOpen} />
       }
-      
+
       <div className={`h-full ${width < WIDTH ? "w-full" : "w-[80%]"} flex flex-col`}>
         <TopMenu width={width} setIsOpen={setIsOpen} />
         <div className={`h-[80%] grid ${width < WIDTH ? "grid-cols-1" : "grid-cols-2"} w-full place-items-center items-center place-content-start p-10 gap-5 overflow-y-auto dark-scrollbar`}>

@@ -18,31 +18,34 @@ export const getUser = async( req, res) =>{
 export const signup = async( req, res) =>{
     try{
         const { username, email, password, gender} = req.body;
+        console.log(req.body);
 
         // Check if email is valid
         const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-        if(!emailRegex.test(email)) return res.status(400).json({error: "Invalid email"});
+        console.log(email);
+        if(!emailRegex.test(email)) return res.status(400).json({ message: "Invalid email" });
 
-        if(gender === "") return res.status(400).json({error: "Please Enter the gender"});
+        if(gender === "") return res.status(400).json({ message: "Please Enter the gender" });
+
         if(gender !== "male" && gender !== "female" && gender !== "other") {
-            return res.status(400).json({error: "Please Enter a Valid Gender"});
+            return res.status(400).json({ message: "Please Enter a Valid Gender" });
         }
 
         // Check if username exists
         const existUser = await User.findOne({ username });
-        if(existUser) return res.status(400).json({error: "This username already exists."});
+        if(existUser) return res.status(400).json({ message : "This username already exists."});
 
         // Check if email exists
         const existEmail = await User.findOne({ email });
-        if(existEmail) return res.status(400).json({error: "This email already exists."});
+        if(existEmail) return res.status(400).json({ message: "This email already exists." });
 
-        if(password.length < 6) return res.status(400).json({error: "Password must be at least 6 characters."});
+        if(password.length < 6) return res.status(400).json({ message: "Password must be at least 6 characters." });
 
         // Hash password
         const salt = await bcryptJs.genSalt(10);
         const passwordHash = await bcryptJs.hash(password, salt);
-        const boyProfilePic = `https://avatar.iran.liara.run/public/boy?username=${username}`;
-        const girlProfilePic = `https://avatar.iran.liara.run/public/girl?username=${username}`;
+        const boyProfilePic = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${username}&hair=short01&beardProbability=100`;
+        const girlProfilePic = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${username}&hair=long01&beardProbability=0`;
 
         // Create new user
         const newUser = new User({
@@ -85,7 +88,7 @@ export const login = async( req, res) =>{
         const user = await User.findOne({ username });
         const isCorrectPasswd = await bcryptJs.compare(password, user?.password || "");
 
-        if(!user || !isCorrectPasswd) return res.status(400).json({error: "username or password is incorrect"});
+        if(!user || !isCorrectPasswd) return res.status(400).json({ message: "username or password is incorrect" });
 
         generateToken(user._id, res);
         res.status(200).json({

@@ -19,64 +19,64 @@ const useSocket = () => {
     const { setOpponentId } = useResultStore();
 
 
-    useEffect(()=>{
-        if( authUser ){
-            const socket = io("https://playchess-1.onrender.com/", {
-                query : {
-                    userId : authUser._id
-                }
-            });
+    // useEffect(()=>{
+    //     if( authUser ){
+    //         const socket = io("https://playchess-1.onrender.com/", {
+    //             query : {
+    //                 userId : authUser._id
+    //             }
+    //         });
 
-            setSocket(socket);
+    //         setSocket(socket);
 
-            socket.on("online_users",(users)=>{
-                console.log("Online Users:",users);
-                setOnlineUsers(users);
-            });
+    //         socket.on("online_users",(users)=>{
+    //             console.log("Online Users:",users);
+    //             setOnlineUsers(users);
+    //         });
 
-            socket.on("reloaded",(room)=>{
-                console.log("got Room Id",room);
-            })
+    //         socket.on("reloaded",(room)=>{
+    //             console.log("got Room Id",room);
+    //         })
 
-            socket.on("hasfriendRequest",(data)=>{
-                setFriendRequests(data, true);
-            });
+    //         socket.on("hasfriendRequest",(data)=>{
+    //             setFriendRequests(data, true);
+    //         });
 
-            socket.on("hasAcceptRequest",({ notification, sender })=>{
-                // newNotification
-                console.log("notification: ",notification,", sender: ", sender);
-                if(notification && sender){
-                    setFriend(sender);
-                }
-                setFriendRequests(notification);
+    //         socket.on("hasAcceptRequest",({ notification, sender })=>{
+    //             // newNotification
+    //             console.log("notification: ",notification,", sender: ", sender);
+    //             if(notification && sender){
+    //                 setFriend(sender);
+    //             }
+    //             setFriendRequests(notification);
                 
-            });
+    //         });
 
-            socket.on("hasAccepted",({ newNotification, userId })=>{
-                setOpponentId(userId);
-                setFriendRequests(newNotification);
-            });
+    //         socket.on("hasAccepted",({ newNotification, userId })=>{
+    //             setOpponentId(userId);
+    //             setFriendRequests(newNotification);
+    //         });
 
-            socket.on("hasGameRequest",(data)=>{
-                // setRequest(data);
-                setFriendRequests(data, true);
-            });
+    //         socket.on("hasGameRequest",(data)=>{
+    //             // setRequest(data);
+    //             setFriendRequests(data, true);
+    //         });
 
-            socket.on("new-accept-request",(data)=>{
-                console.log("Stage 4 : In new-accept-request",data);
-                setFriendRequests(data);
-                playSound(messageSound);
-            })
+    //         socket.on("new-accept-request",(data)=>{
+    //             console.log("Stage 4 : In new-accept-request",data);
+    //             setFriendRequests(data);
+    //             playSound(messageSound);
+    //         })
 
-            return () => socket.close();
-        }
-        else{
-            if(socket){
-                socket.close()
-                setSocket(null);
-            }
-        }
-    },[authUser]);
+    //         return () => socket.close();
+    //     }
+    //     else{
+    //         if(socket){
+    //             socket.close()
+    //             setSocket(null);
+    //         }
+    //     }
+    // },[authUser]);
     return {socket, setSocket} ;
 }
 

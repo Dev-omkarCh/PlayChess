@@ -6,6 +6,7 @@ import Spinner from "../components/Spinner";
 import useSignup from "../hooks/useSignup";
 import { Link} from "react-router-dom";
 import GenderSelect from "../components/GenderSelect";
+import useAuthStore from "@/store/authStore";
 
 export default function Signup() {
   const [username, setUsername] = useState("");
@@ -14,6 +15,7 @@ export default function Signup() {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const { loading, signup } = useSignup();
   const [selectedGender, setSelectedGender] = useState(null);
+  const { isAuthenticated, authUser  } = useAuthStore();
 
   // Handle Form Submission
   const handleSubmit = (e) => {

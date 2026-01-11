@@ -19,6 +19,8 @@ import LogoutConfirmationDialog from "@/components/LogoutConfirmationDialog";
 import { useMainSocket } from "@/store/socketIoStore";
 import GameChatDialog from "@/components/ChatDailog";
 import { ChatPopOverMenu } from "@/ChatPopOverMenu";
+import useAuthStore from "@/store/authStore";
+import { useAppNavigator } from "@/hooks/useAppNavigator";
 
 export default function PlayMenu() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -28,21 +30,27 @@ export default function PlayMenu() {
   const { isAdmin } = useAdmin();
   const { checkIfGameExists } = useGameExists();
   const [open, setOpen] = useState(false);
+  const { authUser, isAuthenticated } = useAuthStore();
+  const { replaceWith } = useAppNavigator();
+
   
-  // TODO : Connection Point
-  // useSocket();
   useEffect(()=>{
     checkIfIsAdmin();
     checkIfGameExists();
+    console.log(authUser, isAuthenticated);
   },[])
 
   const handleSendToProfile = () => {
     navigate('/profile');
   };
 
-  const handleLogout = () => {
-    // logout();
+  const handleOpenLogoutDailog = () => {
     setOpen(true);
+  }
+
+  const handleLogout = () => {
+    logout();
+    replaceWith("/");
   }
 
   return (
@@ -56,7 +64,7 @@ export default function PlayMenu() {
           {menuOpen ? <FiX /> : <FiMenu />}
         </button>
         <button onClick={handleSendToProfile}><FiUser className="text-3xl cursor-pointer hover:text-green-400 transition duration-300" /></button>
-        <button onClick={handleLogout} className="text-3xl cursor-pointer hover:text-red-400 transition duration-300"><MdLogout /></button>
+        <button onClick={handleOpenLogoutDailog} className="text-3xl cursor-pointer hover:text-red-400 transition duration-300"><MdLogout /></button>
         {
           isAdmin && 
           <button 
@@ -108,7 +116,7 @@ export default function PlayMenu() {
           <button
             className="flex items-center justify-center gap-3 w-[90%] bg-blue-500 hover:bg-blue-600 active:translate-y-1 transition-all duration-300 py-3 rounded-lg text-lg font-bold shadow-[0_4px_0_#1d4ed8] relative"
             data-tooltip-id="invite-tooltip"
-            onClick={() => navigate("/invite")}
+            onClick={() => navigate("/friends/invite")}
           >
             <FaUserFriends /> Invite Friends
           </button>
@@ -134,7 +142,7 @@ export default function PlayMenu() {
       {/* <GameChatDialog /> */}
       <LogoutConfirmationDialog
         open={open}
-        onConfirm={() =>logout()}
+        onConfirm={handleLogout}
         onCancel={() => setOpen(false)}
       />
     </div>

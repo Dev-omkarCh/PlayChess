@@ -5,10 +5,12 @@ import useSocketStore from "../../store/socketStore";
 import { useResultStore } from "../../store/resultStore";
 import Button from "../Button";
 import { IoMdCheckmark, IoMdClose } from "react-icons/io";
+import { useSocketContext } from "@/context/SocketContext";
+import clearChessData from "@/utils/clearChessData";
 
 const DrawRequestModal = () => {
   const { drawRequest, closeDrawRequest, openGameOverModal } = useChessStore();
-  const socket = useMainSocket.getState().socket;
+  const socket = useSocketContext();
   const { room } = useSocketStore();
   const {setGameResult} = useResultStore();
 
@@ -19,6 +21,7 @@ const DrawRequestModal = () => {
     setGameResult("draw", "draw");
     openGameOverModal(true);
     closeDrawRequest();
+    clearChessData()
   };
 
   return (

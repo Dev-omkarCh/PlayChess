@@ -6,10 +6,10 @@ import useAuth from '../../store/useAuth';
 import { IoPersonCircleSharp } from "react-icons/io5";
 import { Link, useNavigate } from 'react-router-dom';
 import { getRandomColor } from '../../utils/randomColorGenerator';
+import useAuthStore from '@/store/authStore';
 const NavBar = () => {
-  const { authUser } = useAuth();
+  const { authUser } = useAuthStore();
   const [isOpen, setIsOpen] = useState(false);
-  const [ profileImg, setProfileImg ] = useState(authUser ? authUser.profileImg : "");
   const navigate = useNavigate();
 
   return (
@@ -28,7 +28,7 @@ const NavBar = () => {
             <button onClick={()=> navigate("/profile")}>
               <img 
                 className="w-10 h-10 rounded-full border-2 border-[#A8E639]" 
-                src={profileImg} 
+                src={authUser?.profileImg || '/placeholder.png'} 
                 alt="Profile"
               />
           </button>
@@ -58,7 +58,7 @@ const NavBar = () => {
                 <button className={`${getRandomColor()}`} onClick={()=> navigate("/profile")}>
                   <img 
                     className=" rounded-full border-2 border-[#A8E639]" 
-                    src={profileImg} 
+                    src={authUser?.profileImg || '/placeholder.png'} 
                   />
                 </button>
                 

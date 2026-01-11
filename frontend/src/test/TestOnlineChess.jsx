@@ -11,87 +11,52 @@ import { useMatchmaking } from '../hooks/useMatchMaking';
 import WaitingScreen from '../components/WaitingScreen';
 import GameChatDialog from '@/components/ChatDailog';
 import { FaChessBishop, FaChessKnight, FaChessQueen, FaChessRook } from 'react-icons/fa6';
+import { useSocketContext } from '@/context/SocketContext';
 
 export default function TestOnlineChess() {
 
   const { listenForMoves, gameOver, promotionSquare, promote, board, turn } = useChessStore();
   const { playerColor } = useSocketStore();
   const { getSettings } = useSettingStore();
-  const { socket } = useMainSocket();
+  const socket = useSocketContext();
 
   const { joinQueue } = useMatchmaking();
   const { room } = useSocketStore();
-  // const { authUser } = useAuth();
-  // let getDataLoading = false;
 
 
   useEffect(() => {
     if (socket) {
 
-      // check is reload count is more than 2, then we can get the game state from localStorage/database
-      if(JSON.parse(localStorage.getItem("reload"))?.count >= 2){
-        if(localStorage.getItem("state")){
+      if (localStorage.getItem("board")) {
+        console.log(`When board Exists`);
 
-          const state = JSON.parse(localStorage.getItem("state"));
+        const board = JSON.parse(localStorage.getItem("board"));
+        const turn = localStorage.getItem("turn");
+        const roomId = localStorage.getItem("roomId");
+        const playerColor = localStorage.getItem("playerColor");
 
-          const board = state?.board;
-          const turn = state?.turn;
-          const roomId = state?.roomId;
-          const playerColor = state?.playerColor;
+        console.log("Restored board state", board);
 
-          console.log("Restored board state", board);
-          
-          useChessStore.setState({ board, turn });
-          useSocketStore.setState({ playerColor, room : roomId });
+        useChessStore.setState({ board, turn });
+        useSocketStore.setState({ playerColor, room: roomId });
 
-          socket?.emit("joinGameOnReload", roomId);
-
-        }
+        socket?.emit("joinGameOnReload", roomId);
+        getSettings();
+        return;
       }
-      
-      localStorage.setItem("state", JSON.stringify({
-        board,
-        turn,
-        roomId : room,
-        playerColor,
-      }));
-      localStorage.setItem("gameExists",true);
+
+      localStorage.setItem("board", JSON.stringify(board));
+      localStorage.setItem("turn", turn);
+      localStorage.setItem("roomId", room);
+      localStorage.setItem("playerColor", playerColor);
 
       getSettings();
       joinQueue();
     }
 
-    return () => {
-
-      // check if reload happened before?
-      if(localStorage.getItem("reload")){
-
-        // if yes, then increase the count
-        const reloadDetails = JSON.parse(localStorage.getItem("reload"));
-        
-        reloadDetails.count += 1;
-        localStorage.setItem("reload", JSON.stringify(reloadDetails));
-        
-        // reloadDetails.user = authUser?._id;
-        
-      }
-      // if not, then we know its the inital load
-      else{
-        localStorage.setItem("reload", JSON.stringify({ count : 1}));
-      }
-    }
-
-  },[socket]);
+  }, [socket]);
 
   listenForMoves();
-
-  if(!room && !localStorage.getItem("state")){
-    return (
-      <div className='min-h-screen w-full flex flex-col bg-primary text-white'>
-        <WaitingScreen open  />
-      </div>
-    )
-  };
 
   const pieceOptions = [
     { type: "queen", icon: <FaChessQueen /> },
@@ -102,7 +67,7 @@ export default function TestOnlineChess() {
 
   return (
     <>
-      { gameOver && <ResultModel /> }
+      {gameOver && <ResultModel />}
       {promotionSquare && (
         <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
           <div className="bg-secondary p-4 rounded-lg shadow-lg z-50">
@@ -122,10 +87,10 @@ export default function TestOnlineChess() {
         </div>
       )}
       <div className="min-h-screen flex flex-col bg-primary text-white">
-          <GameChatDialog />
+        {/* <GameChatDialog /> */}
         <div className="flex flex-col md:flex-row flex-1">
-            <LeftBoardSection />
-            <RightMovesSection />
+          <LeftBoardSection />
+          <RightMovesSection />
         </div>
       </div>
     </>

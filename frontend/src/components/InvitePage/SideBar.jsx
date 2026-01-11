@@ -10,6 +10,7 @@ import useAuth from '../../store/useAuth';
 import Friends from './Friends';
 import NavigateBack from '../NavigateBack.jsx';
 import ProfileImage from '../ProfileImage.jsx';
+import useAuthStore from '@/store/authStore';
 
 const sortFriends = (allFriendsList, onlineUsers) => {
 
@@ -27,7 +28,7 @@ const SideBar = ({ width, isOpen, setIsOpen }) => {
 
     const { friends } = useFriendStore();
     const { WIDTH } = useResponsiveStore();
-    const { authUser } = useAuth();
+    const { authUser } = useAuthStore();
     const { onlineUsers } = useOnlineStore();
     const sortedFriends = sortFriends([...friends], onlineUsers); // Sorting the friends array by online Users
     const sidebarRef = useRef(null);
@@ -51,6 +52,29 @@ const SideBar = ({ width, isOpen, setIsOpen }) => {
         };
     }, []);
 
+    const EmptyFriends = () => {
+        return (
+            <div className="flex m-4 flex-col items-center justify-center p-10 bg-[#2b2d31] rounded-lg border-2 border-dashed border-gray-600 h-fir">
+                {/* Cool Icon with pulse effect */}
+                <div className="relative mb-4">
+                    <div className="absolute inset-0 rounded-full bg-indigo-500/20 animate-ping"></div>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="relative h-16 w-16 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                </div>
+
+                <h3 className="text-xl font-semibold text-white">No friends yet?</h3>
+                <p className="text-gray-400 text-sm text-center mt-2 max-w-xs">
+                    It's lonely here! Why not invite someone or search for your squad?
+                </p>
+
+                <button className="mt-6 px-6 py-2 bg-indigo-600 text-white font-medium rounded-full transition-all">
+                    Add Friends
+                </button>
+            </div>
+        );
+    };
+
     return (
 
         <div
@@ -59,14 +83,15 @@ const SideBar = ({ width, isOpen, setIsOpen }) => {
             ref={sidebarRef}
         >
             {/* Top Section */}
-            <div className="w-full h-[8%] flex justify-start gap-5 pl-5 items-center bg-primary border-b border-sectionBorder">
+            <div className="w-full h-[8%] flex justify-start pl-5 items-center bg-primary border-b border-sectionBorder">
                 <NavigateBack path={"/menu"} />
-                <h2 className="text-lg font-semibold">Friends Online</h2>
+                <h2 className="text-lg font-semibold ml-3">Friends Online</h2>
             </div>
-            
+
             {/* All Friend's List */}
-            <div className="w-full h-[82%] flex-grow flex justify-start items-center flex-col overflow-y-auto dark-scrollbar pt-3 gap-4">
-                {sortedFriends.map((friend) => (
+            <div className={`w-full h-[82%] flex-grow flex ${sortedFriends.length > 0 ? "justify-start" : "justify-center"} items-center flex-col overflow-y-auto dark-scrollbar pt-3 gap-4`}>
+                {sortedFriends.length === 0 ? <EmptyFriends /> : 
+                sortedFriends.map((friend) => (
                     <Friends key={friend?._id} friend={friend} />
                 ))}
             </div>
@@ -86,4 +111,4 @@ const SideBar = ({ width, isOpen, setIsOpen }) => {
     )
 }
 
-export default SideBar
+export default SideBar;

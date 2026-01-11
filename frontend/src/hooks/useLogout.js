@@ -1,16 +1,13 @@
-import React, { useState } from 'react'
+import { useState } from 'react';
 import toast from 'react-hot-toast';
-import { useNavigate } from 'react-router-dom';
-import useAuth from '../store/useAuth';
+import useAuthStore from '@/store/authStore';
 
 const useLogout = () => {
 
     const [ loading, setLoading ] = useState(false);
-    const navigate = useNavigate();
-    const { setAuthUser } = useAuth();
+    const { logout : clearAuthData } = useAuthStore();
     
     const logout = async() => {
-
         setLoading(true);
         try{
             const res = await fetch(`/api/auth/logout`,{
@@ -18,11 +15,8 @@ const useLogout = () => {
                 headers : { "Content-Type": "application/json"},
             });
             const data = await res.json();
-            // localStorage
-            localStorage.removeItem("Chess-User");
-            setAuthUser(null);
             toast.success(data.msg);
-            // navigate("/menu");
+            clearAuthData();
         }
         catch(e){
             toast.error(e.message);
@@ -31,8 +25,8 @@ const useLogout = () => {
             setLoading(false);
         }
     }
-  return { logout, loading }
-}
+  return { logout, loading };
+};
 
 
 export default useLogout;

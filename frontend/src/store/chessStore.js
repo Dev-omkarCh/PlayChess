@@ -17,6 +17,11 @@ import { use } from "react";
 import { color } from "framer-motion";
 import clearChessData from "@/utils/clearChessData";
 import { messageStore } from "./messageStore";
+import { useSocketContext } from "@/context/SocketContext";
+
+const useSocket = () => {
+  return useSocketContext();
+}
 
 const initialBoard = () => {
   const emptyBoard = Array(8).fill(null).map(() => Array(8).fill(null));
@@ -51,6 +56,8 @@ const initialBoard = () => {
 
 const useChessStore = create((set, get) => ({
 
+  board: initialBoard(),
+
   drawRequest: false,
   soundPerMove: false,
   openDrawRequest: () => set({ drawRequest: true }),
@@ -65,7 +72,6 @@ const useChessStore = create((set, get) => ({
 
   isInCheck: false,
 
-  board: initialBoard(),
   castlingRights: { whiteKing: true, blackKing: true, whiteRookLeft: true, whiteRookRight: true, blackRookLeft: true, blackRookRight: true },
   turn: "white",
   selectedPiece: null,
@@ -85,6 +91,9 @@ const useChessStore = create((set, get) => ({
   gameOver: null, // "win", "lose", "resign"
   openGameOverModal: (result) => set({ gameOver: result }),
   closeGameOverModal: () => set({ gameOver: null }),
+
+  socket: null,
+  setSocketForChessStore: (socket) => set({ socket }),
 
   changeGameState : () => set((state)=>{
     const status = JSON.parse(localStorage.getItem("gameStatus"));
@@ -197,7 +206,10 @@ const useChessStore = create((set, get) => ({
 
     const playerColor = useSocketStore.getState().playerColor;
     const { board, turn } = state;
-    const { socket, room } = useSocketStore.getState();
+    const {  room } = useSocketStore.getState();
+    const { socket } = get();
+
+    console.log(socket);
 
     const piece = state.board[fromRow][fromCol];
     const target = state.board[toRow][toCol];
@@ -215,25 +227,6 @@ const useChessStore = create((set, get) => ({
     if (!isValidMove(piece, fromRow, fromCol, toRow, toCol, board, state.castlingRights)) {
       return state;
     }
-
-    // if (piece?.type === "pawn" && (toRow === 0 || toRow === 7)) {
-    //   console.log(`Rank ${toRow + 1}`)
-    //   state.openPromotionModal(toRow, toCol); // Open Modal
-    //   console.log(state.promotion)
-    //   return state; // Stop the move until the user chooses promotion
-    // }
-
-    // pawn promotion
-    // if (piece?.type.toLowerCase() === "p" && (toRow === 0 || toRow === 7)) {
-    //   if (state.promotionPiece) {
-    //     piece = state.promotionPiece.toUpperCase();
-    //     set({ promotionPiece: null });
-    //   } else {
-    //     console.log("promote")
-    //     set({ promotionPiece: "q" }); // Default Queen
-    //     piece.type = "Q";
-    //   }
-    // }
 
     // Capture Detection
     
@@ -277,7 +270,11 @@ const useChessStore = create((set, get) => ({
     const isCheck = isKingInCheck(newBoard, state.turn === "white" ? "black" : "white");
     const isCheckmated = isCheck && getPossibleMoves(newBoard, state.turn).length === 0;
     
-    const notation = generateAlgebraicNotation(piece, fromRow, fromCol, toRow, toCol, state.board, isCapture,isCheck,isCheckmated,promotion, castling);
+    const notation = generateAlgebraicNotation(
+      piece, fromRow, fromCol, toRow, 
+      toCol, state.board, isCapture, 
+      isCheck,isCheckmated,promotion, castling
+    );
     state.notation[player].push(notation);
 
     // Disable castling rights after king or rook moves
@@ -292,7 +289,16 @@ const useChessStore = create((set, get) => ({
 
     // Emit move to the server
     if (room) {
-      useMainSocket.getState().socket.emit("movePiece", { room, move: { from: { row: fromRow, col: fromCol }, to: { row: toRow, col: toCol }, piece } });
+      socket.emit("movePiece", 
+        { 
+          room, 
+          move: { 
+            from: { row: fromRow, col: fromCol }, 
+            to: { row: toRow, col: toCol }, 
+            piece 
+          } 
+        })
+      // useMainSocket.getState().socket.emit("movePiece", { room, move: { from: { row: fromRow, col: fromCol }, to: { row: toRow, col: toCol }, piece } });
     }
 
     // Check if the opponent's king is in check
@@ -308,7 +314,7 @@ const useChessStore = create((set, get) => ({
       playChessSound("checkmate");
 
       useResultStore.getState().setGameResult("win","checkmate");
-      useMainSocket.getState().socket.emit("isCheckmated", room);
+      socket.emit("isCheckmated", room);
       state.openGameOverModal(true);
 
       return { board: initialBoard(), turn: "white", selectedPiece: null, suggestedMoves: [] };
@@ -324,7 +330,8 @@ const useChessStore = create((set, get) => ({
 
     const playerColor = useSocketStore.getState().playerColor;
     const { board, turn, selectedPiece, suggestedMoves, capturedPieces, isInCheck, promotionSquare, setPromotionSquare } = state;
-    const { socket, room } = useSocketStore.getState();
+    const { room } = useSocketStore.getState();
+    const { socket } = get();
 
     let isCapture = false;
     let switchTurn = turn === "white" ? "black" : "white";
@@ -442,7 +449,7 @@ const useChessStore = create((set, get) => ({
         toast.error("Checkmate")
 
         useResultStore.getState().setGameResult("win","checkmate");
-        useMainSocket.getState().socket.emit("isCheckmated", room);
+        socket.emit("isCheckmated", room);
         state.openGameOverModal(true);
 
         localStorage.removeItem("gameExists");
@@ -459,7 +466,7 @@ const useChessStore = create((set, get) => ({
 
         if (room) {
           console.log("send move on check")
-          useMainSocket.getState().socket.emit("movePiece", { room, move: { from: { row: previousRow, col: previousCol }, to: { row: row, col: col }, piece : newPiece } });
+          socket.emit("movePiece", { room, move: { from: { row: previousRow, col: previousCol }, to: { row: row, col: col }, piece : newPiece } });
         }
         
         return { board: newBoard, turn: switchTurn, selectedPiece: null, suggestedMoves: [], isCheck : true };
@@ -492,15 +499,11 @@ const useChessStore = create((set, get) => ({
       // Emit move to the server
       if (room) {
         console.log("send move")
-        useMainSocket.getState().socket.emit("movePiece", { room, move: { from: { row: previousRow, col: previousCol }, to: { row: row, col: col }, piece : newPiece } });
+        socket.emit("movePiece", { room, move: { from: { row: previousRow, col: previousCol }, to: { row: row, col: col }, piece : newPiece } });
       }
 
-      localStorage.setItem("state", JSON.stringify({
-        board: newBoard,
-        turn: switchTurn,
-        roomId : room,
-        playerColor,
-      }));
+      localStorage.setItem("board", JSON.stringify(newBoard));
+      localStorage.setItem("turn", switchTurn);
 
       return { board: newBoard, turn: switchTurn, selectedPiece: null, suggestedMoves: [] };
     
@@ -511,8 +514,8 @@ const useChessStore = create((set, get) => ({
 
   // listenFor Moves
   listenForMoves: () => {
-    const socket = useMainSocket.getState().socket;
     const { playerColor, room } = useSocketStore();
+    const { socket } = get();
 
     if(!socket) return { board : initialBoard(), turn : "white",selectedPiece: null, suggestedMoves: []}
 
@@ -532,15 +535,6 @@ const useChessStore = create((set, get) => ({
       })
     });
 
-    socket.on("updateBoardOnPawnPromotion",({ piece, board }) =>{
-      set((state)=>{
-
-        const newBoard = board;
-        console.log("(chessStore.js/updateBoardOnPawnPromotion) piece:", piece, board);
-        return { board: newBoard, promotionSquare: null };
-      })
-    });
-
     socket.on("checkmate", (room) =>{
       set((state)=>{
 
@@ -550,6 +544,7 @@ const useChessStore = create((set, get) => ({
 
         useResultStore.getState().setGameResult("lose","checkmate");
         state.openGameOverModal(true);
+        clearChessData();
         return { board : initialBoard(), turn : "white", selectedPiece: null, suggestedMoves: [] }
       });
     });
@@ -565,6 +560,7 @@ const useChessStore = create((set, get) => ({
       set((state)=>{
         useResultStore.getState().setGameResult("draw","draw");
         state.openGameOverModal(true);
+        clearChessData();
         return { board : initialBoard(), turn : "white",selectedPiece: null, suggestedMoves: []}
       })
     });
@@ -626,12 +622,10 @@ const useChessStore = create((set, get) => ({
 
         state.notation.opponent.push(notation); // ✅ Store opponent's move
 
-        localStorage.setItem("state", JSON.stringify({
-          board: newBoard,
-          turn: switchTurn,
-          roomId : room,
-          playerColor,
-        }));
+        localStorage.setItem("board", JSON.stringify(newBoard));
+        localStorage.setItem("turn", switchTurn);
+        localStorage.setItem("roomId", room);
+        localStorage.setItem("playerColor", playerColor);
 
         return { 
           board: newBoard, 

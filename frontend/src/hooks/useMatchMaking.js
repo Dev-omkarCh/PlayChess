@@ -4,9 +4,10 @@ import { useNavigate } from 'react-router-dom';
 import useSocketStore from './useRoom';
 import { useResultStore } from '../store/resultStore';
 import { useFriend } from './useFriend';
+import { useSocketContext } from '@/context/SocketContext';
 
 export const useMatchmaking = () => {
-    const { socket } = useMainSocket();
+    const socket = useSocketContext();
     const navigate = useNavigate();
     const { setMatchMaked, setOpponentId } = useResultStore();
     const { setRoom, setPlayerColor, playerColor } = useSocketStore();
