@@ -2,19 +2,23 @@ import { FaUserMinus, FaUserPlus } from "react-icons/fa";
 import useFriendStore from "../../store/useFriendStore";
 import { useFriend } from "../../hooks/useFriend";
 import { useResponsiveStore } from "../../store/responsiveStore";
+import useRequest from "@/hooks/useRequest";
+import useSeachedUsers from "@/store/searchStore";
 
 export default function SearchedFriend({ user, width }) {
 
   // changes tested
   const { friends} = useFriendStore();
-  const { sendFriendRequest } = useFriend();
+  const { sendFriendRequest } = useRequest();
+  const { removeFriend } = useFriend();
   const { WIDTH } = useResponsiveStore();
+  const { searchUsers, setSearchUser } = useSeachedUsers();
   
   const isFriend = friends.some((friend) => friend._id === user._id);
 
   const handleFriendRequest = async () => {
     if (isFriend) {
-      // Handle unfriend logic here
+      await removeFriend(user._id);
     } else {
       await sendFriendRequest(user._id);
     }

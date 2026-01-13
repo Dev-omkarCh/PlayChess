@@ -1,14 +1,13 @@
 import toast from "react-hot-toast";
-import { useMainSocket } from "../store/socketIoStore";
 import useFriendStore from "../store/useFriendStore";
 import useSocketStore from "../store/socketStore";
 import { useRoom } from "./useRoom";
 import { useResultStore } from "../store/resultStore";
-import useAuth from "../store/useAuth";
 import useChessStore from "../store/chessStore";
 import useAdmin from "../store/useAdmin";
 import { useSocketContext } from "@/context/SocketContext";
 import axios from "axios";
+import useAuthStore from "@/store/authStore";
 
 export const useFriend = () => {
 
@@ -16,7 +15,7 @@ export const useFriend = () => {
     const { friendRequests, setFriendRequests, setGameRequests, friends, setFriends, setGameId, setUser, setHistory, setUsers, setFriend, setGameStatus } = useFriendStore();
     const { isGameStarted, startGameListener } = useSocketStore();
     const { joinGame } = useRoom();
-    const { authUser } = useAuth();
+    const { authUser } = useAuthStore();
     const { opponentId, setOpponentId, you, setYou, opponent, setOpponent, result, type, matchMaked } = useResultStore();
     const { notation } = useChessStore();
     const { setIsAdmin } = useAdmin();
@@ -366,7 +365,25 @@ export const useFriend = () => {
             console.error("Something went wrong")
         }
 
-    }
+    };
+
+    const removeFriend = async (id) => {
+        try {
+            const response = await axios.delete(`/api/friends/remove/${id}`);
+            const data = response.data;
+            toast.success(data?.message);
+            const filteredfriends = friends.filter((friend)=> friend._id !== id );
+            setFriends(filteredfriends);
+            socket?.emit("remove-friend", { removedUser: id, user : authUser._id });
+            return;
+
+        } catch (error) {
+            console.log(error);
+            console.error(error.response?.data?.message || "Something went wrong");
+            toast.error(error.response?.data?.message || "Something went wrong");
+            return;
+        }
+    };
 
     return {
         friendRequestListener,
@@ -387,6 +404,7 @@ export const useFriend = () => {
         markAllMessagesAsRead,
         markMessageAsRead,
         checkIfGameIsReloaded,
-        checkIfIsAdmin
+        checkIfIsAdmin,
+        removeFriend
     }
 }

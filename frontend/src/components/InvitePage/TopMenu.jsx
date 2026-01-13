@@ -3,11 +3,9 @@ import { FaSearch, FaBell } from "react-icons/fa";
 import NotificationModal from "./NotificationModal";
 import useSeachedUsers from "../../store/searchStore";
 import useFriendStore from "../../store/useFriendStore";
-import { useFriend } from "../../hooks/useFriend";
 import { BiSidebar } from "react-icons/bi";
 import { useResponsiveStore } from "../../store/responsiveStore";
 import { useOnlineStore } from "../../store/onlineStore";
-import useAuth from "../../store/useAuth";
 
 
 export default function TopMenu({ width, setIsOpen }) {
@@ -17,11 +15,12 @@ export default function TopMenu({ width, setIsOpen }) {
   const { WIDTH } = useResponsiveStore();
   const [isOpenNotification, setIsOpenNotification] = useState();
   const { onlineUsers } = useOnlineStore();
-  const isOnline = onlineUsers.length - 1;
-
+  const activePlayer = onlineUsers?.length || 0;
 
   const { friendRequests } = useFriendStore();
-  const notifications = friendRequests.filter((request) => request.type === "friend-request" || request.type === "game-request");
+  const notifications = friendRequests.filter((request) =>
+    request.type === "friend-request" || request.type === "game-request"
+  );
 
   useEffect(() => {
     const fetchResults = async () => {
@@ -51,8 +50,7 @@ export default function TopMenu({ width, setIsOpen }) {
 
   return (
     <div
-      className={`topMenu flex items-center justify-evenly w-full h-[8%] bg-primary p-2 border-b border-sectionBorder`}
-    >
+      className={`topMenu flex items-center justify-evenly w-full h-[8%] bg-primary p-2 border-b border-sectionBorder`}>
       {
         width < WIDTH &&
         <button
@@ -62,7 +60,7 @@ export default function TopMenu({ width, setIsOpen }) {
         >
 
           <BiSidebar className="text-[1.5rem] text-white" />
-          {isOnline > 0 && (
+          {activePlayer > 0 && (
             <span className="absolute top-0 right-0 text-[10px] w-3 h-3 bg-red-500 rounded-full border-2 z-50 border-gray-800 "></span>
           )}
         </button>
@@ -70,7 +68,6 @@ export default function TopMenu({ width, setIsOpen }) {
       {/* Search Bar */}
       <div className={`flex items-center bg-secondary 
         text-gray-300 px-3 py-2 rounded-lg w-[80%] border border-sectionBorder ${width < WIDTH ? "ml-3" : "ml-8"}`}
-
       >
         <FaSearch className="text-gray-400 mr-3" />
         <input
@@ -94,22 +91,21 @@ export default function TopMenu({ width, setIsOpen }) {
             className="p-3 rounded-full bg-secondaryVaraint hover:bg-[#454545] transition-all duration-300 border border-sectionBorder"
           >
             <FaBell className="text-white text-[1.1rem]" />
-            {notifications.length !== 0 ? <span
-              className="absolute top-0 left-[60%] bg-red-500 w-4 h-4 text-white font-bold rounded-full text-[10px] flex justify-center items-center">
-              {notifications.length}
-            </span> :
-              ""
+            {notifications.length > 0 &&
+              <span
+                className="absolute top-0 left-[60%] bg-red-500 w-4 h-4 text-white font-bold rounded-full text-[10px] flex justify-center items-center">
+                {notifications.length}
+              </span>
             }
-
           </button>
-
         </div>
 
         <NotificationModal
-          onClose={() => setIsOpenNotification(false)} 
-          isOpen={isOpenNotification} 
+          onClose={() => setIsOpenNotification(false)}
+          isOpen={isOpenNotification}
+          notifications={notifications}
         />
-        
+
       </div>
     </div>
   );

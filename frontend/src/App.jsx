@@ -14,7 +14,6 @@ import Profile from './pages/Profile.jsx';
 import ChessGame from './components/chess/ChessGame.jsx';
 
 import MultiplayerGame from './pages/MutiplayerGame/MultiplayerGame.jsx';
-import useAuth from './store/useAuth.js';
 
 import NotFound from './pages/NotFound.jsx';
 import InviteFriend from './pages/InviteFriend.jsx';
@@ -31,11 +30,12 @@ import useAdmin from './store/useAdmin.js';
 import TestOnlineChess from './test/TestOnlineChess.jsx';
 import { ToastProvider} from './components/ToastProvider.jsx';
 import Test from './pages/Test.jsx';
+import { useSocketContext } from './context/SocketContext.jsx';
 
 
 const App = () => {
 
-  const { authUser } = useAuth();
+  const { authUser } = useSocketContext();
   const { isAdmin } = useAdmin();
   
   useSocket();

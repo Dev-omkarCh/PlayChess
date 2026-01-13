@@ -1,27 +1,13 @@
-
 import { create } from "zustand";
 import { isValidMove, getPossibleMoves } from "../utils/chessLogic";
 import useSocketStore from "./socketStore";
 import { toast } from "react-hot-toast";
 import { isKingInCheck, isCheckmate } from "../utils/chessLogic";
-import { useMainSocket } from "./socketIoStore";
 import { generateAlgebraicNotation } from "../utils/generateNotation";
-import useAuth from "./useAuth";
-import useFriendStore from "./useFriendStore";
-import { useFriend } from "../hooks/useFriend";
 import { useResultStore } from "./resultStore";
-import { useRoom } from "../hooks/useRoom";
-import useSettingStore from "./settingStore";
 import { playChessSound } from "../utils/playChessSound";
-import { use } from "react";
-import { color } from "framer-motion";
 import clearChessData from "@/utils/clearChessData";
-import { messageStore } from "./messageStore";
-import { useSocketContext } from "@/context/SocketContext";
-
-const useSocket = () => {
-  return useSocketContext();
-}
+import { generateFEN } from "@/utils/Fen";
 
 const initialBoard = () => {
   const emptyBoard = Array(8).fill(null).map(() => Array(8).fill(null));
@@ -57,16 +43,26 @@ const initialBoard = () => {
 const useChessStore = create((set, get) => ({
 
   board: initialBoard(),
+  gameHistory : [ { move: "initial", fen : "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR white kqK - 0 0" } ],
+  setGameHistory: (move) => set({ gameHistory : [...gameHistory, move] }),
+
+  currentMoveNumber : 0,
+  moveCount : 0,
+  count : 0,
+  setMoveCount : (count) => set({ moveCount : count }),
 
   drawRequest: false,
   soundPerMove: false,
   openDrawRequest: () => set({ drawRequest: true }),
   closeDrawRequest: () => set({ drawRequest: false }),
 
-  resetBoard :() => set({ 
+  moveForward : (board) => set({ board }),
+  moveForward : (board) => set({ board }),
+
+  resetBoard: () => set({
     board: initialBoard(),
     turn: "white",
-    selectedPiece: null, 
+    selectedPiece: null,
     suggestedMoves: []
   }),
 
@@ -77,16 +73,16 @@ const useChessStore = create((set, get) => ({
   selectedPiece: null,
   suggestedMoves: [], // Stores highlighted squares
 
-  setSelectedPiece : (selectedPiece) => set({ selectedPiece }),
-  setSuggestedMoves : (suggestedMoves) => set({ suggestedMoves }),
-  promotion : null,
-  capturedPieces : { you: [], opponent: []},
-  notation : { you: [], opponent: [] },
-  setNotation : (notation) => set({ notation }),
+  setSelectedPiece: (selectedPiece) => set({ selectedPiece }),
+  setSuggestedMoves: (suggestedMoves) => set({ suggestedMoves }),
+  promotion: null,
+  capturedPieces: { you: [], opponent: [] },
+  notation: { you: [], opponent: [] },
+  setNotation: (notation) => set({ notation }),
 
-  result : null,
-  type : null,
-  openDummyModal: (result, type) => set({ result : result, type : type}),
+  result: null,
+  type: null,
+  openDummyModal: (result, type) => set({ result: result, type: type }),
 
   gameOver: null, // "win", "lose", "resign"
   openGameOverModal: (result) => set({ gameOver: result }),
@@ -95,60 +91,23 @@ const useChessStore = create((set, get) => ({
   socket: null,
   setSocketForChessStore: (socket) => set({ socket }),
 
-  changeGameState : () => set((state)=>{
-    const status = JSON.parse(localStorage.getItem("gameStatus"));
-    console.log("In changeGameState: status", status)
-  }),
+  promote: (piece) => set((state) => {
 
-  promote : (piece) => set((state)=>{
-    
     let newBoard = [...state.board];
     const { row, col, color } = state.promotionSquare;
 
-    let promotedPiece = { type: piece?.type, color};
+    let promotedPiece = { type: piece?.type, color };
 
     newBoard[row][col] = promotedPiece;
     state.setPromotionSquare(null);
 
-    useMainSocket.getState().socket?.emit("pawnPromotion",{ piece: promotedPiece, board: newBoard })
+    state.socket?.emit("pawnPromotion", { piece: promotedPiece, board: newBoard })
 
-    return { board : newBoard }
-  }),
-
-  setGameState: ({ board, turn, notations, playerColor, roomId, white, black }) =>
-    set({
-      board,
-      turn,
-      notations,
-      // playerColor,
-      // roomId,
-      // whiteId: white,
-      // blackId: black,
-    }),
-
-  reconnectGame : () => set(async(state)=>{
-      const data = await fetch(`/api/users/game/reconnect`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ 
-          board: state.board, 
-          turn: state.turn, 
-          notations: state.notation, 
-          playerColor: useSocketStore.getState().playerColor,
-          capturedPieces: state.capturedPieces,
-          opponent: useResultStore.getState().opponent,
-          roomId : useSocketStore.getState().room
-        })
-      });
-      const res = await data.json();
-      toast.success(res.msg);
-      return;
+    return { board: newBoard }
   }),
 
   openPromotionModal: (row, col) => {
-    set(()=>({
+    set(() => ({
       promotion: { row, col }, // Force new object reference
     }));
   },
@@ -163,15 +122,15 @@ const useChessStore = create((set, get) => ({
 
       newBoard[row][col] = { type, color: state.turn === "white" ? "white" : "black" };
       return { board: newBoard, promotion: null, turn: state.turn === "white" ? "black" : "white", };
-  }),
+    }),
 
   // Select a piece and calculate possible moves
-  selectPiece: ( row, col) => set((state) => {
+  selectPiece: (row, col) => set((state) => {
     const playerColor = useSocketStore.getState().playerColor;
     const piece = state.board[row][col];
 
 
-    if(!piece) return state;
+    if (!piece) return state;
 
     if (piece.color !== state.turn) {
       toast.error("Not your turn!");
@@ -186,30 +145,29 @@ const useChessStore = create((set, get) => ({
 
     const possibleMoves = getPossibleMoves(piece, row, col, state.board, state.castlingRights, true);
 
-    console.log("possibleMoves :",possibleMoves);
+    console.log("possibleMoves :", possibleMoves);
 
     // Reverse suggestions if player is black
     const finalSuggestedMoves =
-    playerColor === "black"
-      ? possibleMoves.map((move) => ({
+      playerColor === "black"
+        ? possibleMoves.map((move) => ({
           row: 7 - move.row,
           col: move.col,
         }))
-      : possibleMoves;
+        : possibleMoves;
 
-      console.log("finalSuggestedMoves :",finalSuggestedMoves);
-      
-      return { selectedPiece: { row, col }, suggestedMoves: finalSuggestedMoves };
+    console.log("finalSuggestedMoves :", finalSuggestedMoves);
+
+    return { selectedPiece: { row, col }, suggestedMoves: finalSuggestedMoves };
   }),
   // Move Piece
   movePiece: (fromRow, fromCol, toRow, toCol) => set((state) => {
 
     const playerColor = useSocketStore.getState().playerColor;
     const { board, turn } = state;
-    const {  room } = useSocketStore.getState();
+    const { room } = useSocketStore.getState();
     const { socket } = get();
 
-    console.log(socket);
 
     const piece = state.board[fromRow][fromCol];
     const target = state.board[toRow][toCol];
@@ -217,19 +175,22 @@ const useChessStore = create((set, get) => ({
 
     // ✅ Only allow moves if it's the player's turn
     if (piece.color !== playerColor) {
+      console.log("not your turn");
       return state;
     }
 
     if (!piece || piece.color !== turn) {
+      console.log("not your turn 1");
       return state;
     }
 
     if (!isValidMove(piece, fromRow, fromCol, toRow, toCol, board, state.castlingRights)) {
+      console.log("Not valid Move");
       return state;
     }
 
     // Capture Detection
-    
+
     const isCapture = target !== null && target.color !== piece.color;
     let castling = null;
     let promotion = null;
@@ -242,16 +203,16 @@ const useChessStore = create((set, get) => ({
       castling = fromCol > toCol ? "queen-side" : "king-side";
     }
 
-    
-    
-    if(isCapture){
+
+
+    if (isCapture) {
       playChessSound("capture");
       state.capturedPieces[player].push(target);
     }
-    
+
     const newBoard = state.board.map((row) => [...row]);
-    
-     // Castling Detection
+
+    // Castling Detection
     //  if (piece.type === "king" && Math.abs(fromCol - toCol) === 2) {
     //   if (toCol === 6) {
     //     newBoard[fromRow][5] = newBoard[fromRow][7]; // King-side Rook Move
@@ -262,18 +223,18 @@ const useChessStore = create((set, get) => ({
     //     newBoard[fromRow][0] = null;
     //   }
     // }
-    
-    
+
+
     newBoard[toRow][toCol] = piece;
     newBoard[fromRow][fromCol] = null;
 
     const isCheck = isKingInCheck(newBoard, state.turn === "white" ? "black" : "white");
     const isCheckmated = isCheck && getPossibleMoves(newBoard, state.turn).length === 0;
-    
+
     const notation = generateAlgebraicNotation(
-      piece, fromRow, fromCol, toRow, 
-      toCol, state.board, isCapture, 
-      isCheck,isCheckmated,promotion, castling
+      piece, fromRow, fromCol, toRow,
+      toCol, state.board, isCapture,
+      isCheck, isCheckmated, promotion, castling
     );
     state.notation[player].push(notation);
 
@@ -289,31 +250,30 @@ const useChessStore = create((set, get) => ({
 
     // Emit move to the server
     if (room) {
-      socket.emit("movePiece", 
-        { 
-          room, 
-          move: { 
-            from: { row: fromRow, col: fromCol }, 
-            to: { row: toRow, col: toCol }, 
-            piece 
-          } 
-        })
-      // useMainSocket.getState().socket.emit("movePiece", { room, move: { from: { row: fromRow, col: fromCol }, to: { row: toRow, col: toCol }, piece } });
+      socket.emit("movePiece",
+        {
+          room,
+          move: {
+            from: { row: fromRow, col: fromCol },
+            to: { row: toRow, col: toCol },
+            piece
+          }
+        });
     }
 
     // Check if the opponent's king is in check
     if (isKingInCheck(newBoard, opponentColor)) {
       playChessSound("check");
     }
-    
+
     // Check for Checkmate
     if (isCheckmate(newBoard, opponentColor)) {
-      
+
       // useSocketStore.getState().isGameStarted = false;
 
       playChessSound("checkmate");
 
-      useResultStore.getState().setGameResult("win","checkmate");
+      useResultStore.getState().setGameResult("win", "checkmate");
       socket.emit("isCheckmated", room);
       state.openGameOverModal(true);
 
@@ -331,7 +291,9 @@ const useChessStore = create((set, get) => ({
     const playerColor = useSocketStore.getState().playerColor;
     const { board, turn, selectedPiece, suggestedMoves, capturedPieces, isInCheck, promotionSquare, setPromotionSquare } = state;
     const { room } = useSocketStore.getState();
-    const { socket } = get();
+    const { socket, setGameHistory } = get();
+    let moveNumber = state.currentMoveNumber;
+    let count = state.moveCount;
 
     let isCapture = false;
     let switchTurn = turn === "white" ? "black" : "white";
@@ -345,11 +307,9 @@ const useChessStore = create((set, get) => ({
     const previousRow = selectedPiece?.row;
     const previousCol = selectedPiece?.col;
 
-    
-
     // clicked piece is null and selectedPiece exists then, move piece
     // the square moving if has a piece and its color is different form ours and selectedPiece exists then, capture piece
-    if(piece === null && selectedPiece || piece?.color !== playerColor && selectedPiece){
+    if (piece === null && selectedPiece || piece?.color !== playerColor && selectedPiece) {
 
       // the piece we selected, as piece is the square we want to go not the actual square we selected
       const newPiece = newBoard[previousRow][previousCol];
@@ -362,24 +322,25 @@ const useChessStore = create((set, get) => ({
 
       // Validate the move
       if (!isValidMove(newPiece, previousRow, previousCol, row, col, newBoard, state?.castlingRights)) {
+        console.log("Not valid Move");
         playChessSound("illegal");
         return state;
       }
 
-      
+
       // helps avoid moving null squares and stucked pieces
-      if(!suggestedMoves){
-         toast.error("not in suggested moves")
+      if (!suggestedMoves) {
+        toast.error("not in suggested moves")
         return state;
       }
 
       // check for pawn promotion
-    if (
-      (newPiece?.type === "pawn" && row === 0) || // black pawn reaches rank 1
-      (newPiece?.type === "pawn" && row === 7)    // white pawn reaches rank 8
-    ) {
-      setPromotionSquare({ row, col, color: newPiece?.color });
-    }
+      if (
+        (newPiece?.type === "pawn" && row === 0) || // black pawn reaches rank 1
+        (newPiece?.type === "pawn" && row === 7)    // white pawn reaches rank 8
+      ) {
+        setPromotionSquare({ row, col, color: newPiece?.color });
+      }
 
       // check for castling
       let castling = null;
@@ -388,30 +349,30 @@ const useChessStore = create((set, get) => ({
       }
 
       // checks if the square you are moving your piece to-- exists in suggestedMoves as it helps us know that its a valid move
-      const finalSuggestedMoves = suggestedMoves.filter(move =>{
-        
+      const finalSuggestedMoves = suggestedMoves.filter(move => {
+
         // adjust the row if player is black
         const adjustedRow = playerColor === "black" ? 7 - row : row;
 
-        if(move?.row === adjustedRow && move?.col === col){
+        if (move?.row === adjustedRow && move?.col === col) {
 
           // edge case for castling ( moving rook)
-          if(castling){
-              if (col === 6) {
-                console.log("castling king-side");
-                // newBoard[previousRow][5] = newBoard[previousRow][7]; // King-side Rook Move
-                // newBoard[previousRow][7] = null;
-              
-              }
-              if (col === 2) {
-                console.log("castling Queen-side");
-                // newBoard[previousRow][3] = newBoard[previousRow][0]; // Queen-side Rook Move
-                // newBoard[previousRow][0] = null;
-                
-              }
-              playChessSound("castle");
+          if (castling) {
+            if (col === 6) {
+              console.log("castling king-side");
+              // newBoard[previousRow][5] = newBoard[previousRow][7]; // King-side Rook Move
+              // newBoard[previousRow][7] = null;
+
+            }
+            if (col === 2) {
+              console.log("castling Queen-side");
+              // newBoard[previousRow][3] = newBoard[previousRow][0]; // Queen-side Rook Move
+              // newBoard[previousRow][0] = null;
+
+            }
+            playChessSound("castle");
           }
-          
+
           // the code that actually moves the piece in board
           newBoard[row][col] = newPiece;
           newBoard[previousRow][previousCol] = null;
@@ -419,13 +380,13 @@ const useChessStore = create((set, get) => ({
 
         }
       });
-      
+
       // helps avoid adding notation of invalid move
-      if(finalSuggestedMoves?.length === 0) return { 
-        board: newBoard, 
-        turn: playerColor, 
-        selectedPiece: null, 
-        suggestedMoves: [] 
+      if (finalSuggestedMoves?.length === 0) return {
+        board: newBoard,
+        turn: playerColor,
+        selectedPiece: null,
+        suggestedMoves: []
       };
 
       // check for this conditions
@@ -439,7 +400,7 @@ const useChessStore = create((set, get) => ({
       if (piece === "R" && col === 7) set({ castlingRights: { ...state.castlingRights, whiteRookRight: false } });
       if (piece === "r" && col === 0) set({ castlingRights: { ...state.castlingRights, blackRookLeft: false } });
       if (piece === "r" && col === 7) set({ castlingRights: { ...state.castlingRights, blackRookRight: false } });
-      
+
       // notate the move
       // const notation = generateAlgebraicNotation(newPiece, selectedPiece.row, selectedPiece.col, row, col, board, isCapture, isCheck ,isCheckmated,false, castling);
       // state.notation["you"]?.push(notation);
@@ -448,7 +409,7 @@ const useChessStore = create((set, get) => ({
         playChessSound("checkmate");
         toast.error("Checkmate")
 
-        useResultStore.getState().setGameResult("win","checkmate");
+        useResultStore.getState().setGameResult("win", "checkmate");
         socket.emit("isCheckmated", room);
         state.openGameOverModal(true);
 
@@ -466,47 +427,70 @@ const useChessStore = create((set, get) => ({
 
         if (room) {
           console.log("send move on check")
-          socket.emit("movePiece", { room, move: { from: { row: previousRow, col: previousCol }, to: { row: row, col: col }, piece : newPiece } });
+          socket.emit("movePiece", { room, move: { from: { row: previousRow, col: previousCol }, to: { row: row, col: col }, piece: newPiece } });
         }
-        
-        return { board: newBoard, turn: switchTurn, selectedPiece: null, suggestedMoves: [], isCheck : true };
+
+        return { board: newBoard, turn: switchTurn, selectedPiece: null, suggestedMoves: [], isCheck: true };
       }
 
       // if the piece we are moving to the sqaure already has a piece(not our color), then capture it and store.
-      if(piece){
+      if (piece) {
 
         const captured = {
-          piece : newBoard[row][col],
-          position : { row, col },
-          capturer : newBoard[previousRow][previousCol],
-          capturerPosition : { row : previousRow, col : previousCol }
+          piece: newBoard[row][col],
+          position: { row, col },
+          capturer: newBoard[previousRow][previousCol],
+          capturerPosition: { row: previousRow, col: previousCol }
         }
 
         isCapture = true;
         playChessSound("capture");
         capturedPieces["you"]?.push(captured);
-        
+
       }
 
-      const notation = generateAlgebraicNotation(newPiece, selectedPiece.row, selectedPiece.col, row, col, board, isCapture, isCheck ,isCheckmated,false, castling);
+      const notation = generateAlgebraicNotation(newPiece, selectedPiece.row, selectedPiece.col, row, col, board, isCapture, isCheck, isCheckmated, false, castling);
+
       state.notation["you"]?.push(notation);
 
       // only play move piece sound when not of the sounds are played or it will merge all the sounds
-      if(!isCapture && !castling && !isCheck && !isCheckmated){
+      if (!isCapture && !castling && !isCheck && !isCheckmated) {
         playChessSound("move");
       }
 
+      state.currentMoveNumber = playerColor === "black" ? moveNumber += 1 : moveNumber;
+      state.moveCount = count + 1;
+      state.count = count + 1;
+      const fenString = generateFEN(board, turn, "kqK", '-', count + 1, playerColor === "white" && moveNumber === 0 ? 0 : moveNumber);
+
+      const move = {
+        move : notation,
+        fen : fenString,
+      }
+      
+      set({ gameHistory : [...state.gameHistory, move ]});
+
+      console.log(move);
+      console.log(state.gameHistory);
       // Emit move to the server
       if (room) {
-        console.log("send move")
-        socket.emit("movePiece", { room, move: { from: { row: previousRow, col: previousCol }, to: { row: row, col: col }, piece : newPiece } });
-      }
+        console.log("send move");
+        socket.emit("movePiece", { 
+          room, 
+          move: { from: { row: previousRow, col: previousCol }, to: { row: row, col: col }, piece: newPiece }, 
+          moveInFen : move,
+          notations : state.notation
+        });
+      };
+
 
       localStorage.setItem("board", JSON.stringify(newBoard));
       localStorage.setItem("turn", switchTurn);
+      localStorage.setItem("gameHistory", JSON.stringify([...state.gameHistory, move]));
+      localStorage.setItem("notations", JSON.stringify(state.notation));
 
       return { board: newBoard, turn: switchTurn, selectedPiece: null, suggestedMoves: [] };
-    
+
     }
 
     return state;
@@ -515,9 +499,9 @@ const useChessStore = create((set, get) => ({
   // listenFor Moves
   listenForMoves: () => {
     const { playerColor, room } = useSocketStore();
-    const { socket } = get();
+    const { socket, setGameHistory } = get();
 
-    if(!socket) return { board : initialBoard(), turn : "white",selectedPiece: null, suggestedMoves: []}
+    if (!socket) return { board: initialBoard(), turn: "white", selectedPiece: null, suggestedMoves: [] }
 
     // Remove Existing Listener First
     socket.off("resigned");
@@ -526,48 +510,58 @@ const useChessStore = create((set, get) => ({
     socket.off("drawAccepted");
     socket.off("newDrawRequest");
 
-    socket.on("resigned", (room)=>{
-      set((state)=>{
-        useResultStore.getState().setGameResult("win","resign");
+    socket.on("resigned", (room) => {
+      set((state) => {
+        useResultStore.getState().setGameResult("win", "resign");
         state.openGameOverModal(true);
         clearChessData();
-        return { board : initialBoard(), turn : "white",selectedPiece: null, suggestedMoves: []}
+        return { board: initialBoard(), turn: "white", selectedPiece: null, suggestedMoves: [] }
       })
     });
 
-    socket.on("checkmate", (room) =>{
-      set((state)=>{
+    socket.on("checkmate", (room) => {
+      set((state) => {
 
         localStorage.removeItem("state");
         localStorage.removeItem("reload");
         localStorage.removeItem("roomId");
 
-        useResultStore.getState().setGameResult("lose","checkmate");
+        useResultStore.getState().setGameResult("lose", "checkmate");
         state.openGameOverModal(true);
         clearChessData();
-        return { board : initialBoard(), turn : "white", selectedPiece: null, suggestedMoves: [] }
+        return { board: initialBoard(), turn: "white", selectedPiece: null, suggestedMoves: [] }
       });
     });
 
-    socket.on("newDrawRequest", (room)=>{
-      set((state)=>{ 
+    socket.on("newDrawRequest", (room) => {
+      set((state) => {
         state.openDrawRequest();
-        return { board : state.board, turn : state.turn, selectedPiece: null, suggestedMoves: []}
+        return { board: state.board, turn: state.turn, selectedPiece: null, suggestedMoves: [] }
       })
     });
 
-    socket.on("drawResult", (room)=>{
-      set((state)=>{
-        useResultStore.getState().setGameResult("draw","draw");
+    socket.on("drawResult", (room) => {
+      set((state) => {
+        useResultStore.getState().setGameResult("draw", "draw");
         state.openGameOverModal(true);
         clearChessData();
-        return { board : initialBoard(), turn : "white",selectedPiece: null, suggestedMoves: []}
+        return { board: initialBoard(), turn: "white", selectedPiece: null, suggestedMoves: [] }
       })
     });
 
-    socket.on("updateBoard", ({ from, to, piece }) => {
+    socket.on("updateBoard", ({ from, to, piece }, moveInFen, notations) => {
       set((state) => {
+
         const { board, turn } = state;
+        set({ gameHistory : [...state.gameHistory, moveInFen ]});
+
+        const moveNumber = parseInt(moveInFen?.fen?.split(" ")[5] || 0);
+        const count = parseInt(moveInFen?.fen?.split(" ")[4] || 0);
+
+        set({ currentMoveNumber : moveNumber });
+        set({ moveCount : count, count: count });
+        state.notation["opponent"]?.push(moveInFen?.move);
+        // set({ notation: notations })
 
         const newBoard = state.board.map((r) => [...r]);
         const switchTurn = turn === "white" ? "black" : "white";
@@ -576,9 +570,12 @@ const useChessStore = create((set, get) => ({
         newBoard[to.row][to.col] = piece;
         newBoard[from.row][from.col] = null;
 
+        console.log(moveInFen);
+        console.log(state.gameHistory);
+
         // Detect Castling and Move Rook
         if (piece?.type === "king" && Math.abs(from.col - to.col) === 2) {
-  
+
           if (to.col === 6) {
             newBoard[to.row][5] = newBoard[to.row][7]; // King-side Rook Move
             newBoard[to.row][7] = null;
@@ -612,24 +609,26 @@ const useChessStore = create((set, get) => ({
         const isCheckmate = isCheck && getPossibleMoves(newBoard, state.turn).length === 0;
 
         const notation = generateAlgebraicNotation(
-          piece, from.row, 
-          from.col, to.row, 
-          to.col,newBoard,
-          isCapture,isCheck,
-          isCheckmate,promotion,
+          piece, from.row,
+          from.col, to.row,
+          to.col, newBoard,
+          isCapture, isCheck,
+          isCheckmate, promotion,
           isCastling
         );
 
-        state.notation.opponent.push(notation); // ✅ Store opponent's move
+        // state.notation.opponent.push(notation); // ✅ Store opponent's move
 
         localStorage.setItem("board", JSON.stringify(newBoard));
         localStorage.setItem("turn", switchTurn);
         localStorage.setItem("roomId", room);
         localStorage.setItem("playerColor", playerColor);
+        localStorage.setItem("gameHistory", JSON.stringify([...state.gameHistory, moveInFen]));
+        localStorage.setItem("notations", JSON.stringify(state.notation));
 
-        return { 
-          board: newBoard, 
-          turn: state.turn === "white" ? "black" : "white", 
+        return {
+          board: newBoard,
+          turn: state.turn === "white" ? "black" : "white",
           suggestedMoves: [],
           notation: state.notation
         };

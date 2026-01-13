@@ -7,7 +7,6 @@ import useChessStore from '../store/chessStore';
 import { useNavigate } from 'react-router-dom';
 import useSocketStore from '../store/socketStore';
 import { useFriend } from '../hooks/useFriend';
-import { useMainSocket } from '../store/socketIoStore';
 import { useResultStore } from '../store/resultStore';
 import clearChessData from '@/utils/clearChessData';
 import { useSocketContext } from '@/context/SocketContext';

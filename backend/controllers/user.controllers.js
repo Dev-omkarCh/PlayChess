@@ -350,18 +350,26 @@ export const getGameRequests = async(req, res) =>{
 
 export const getFriendRequests = async(req, res) =>{
     try {
-        const user = await User.findById(req.user._id);
-        const friendRequests = await Notifications.find({ to : req.user._id, isRead : false })
+        const id = req?.user?._id;
+        if(!id) return res.status(400).json({ message: "UnAuthorized Access" });
+
+        const user = await User.findById(id);
+        if(!user) return res.status(400).json({ message: "Login first, to get Freind Requests" });
+
+        const friendRequests = await Notifications.find({ 
+            to : req.user._id, 
+            isRead : false,
+        })
         .populate("from", "username profileImg")
         .sort({ createdAt : -1 });
-        res.json(friendRequests);
+
+        return res.json(friendRequests);
     } 
-    catch (e) {
-        console.log("Error in getFriendRequests Controller", e.message);
-        res.status(500).json({ error: "Internal Server Error" });
-        
-    }
-}
+    catch (error) {
+        console.log("Error in getFriendRequests Controller", error.message);
+        res.status(500).json({ message: "Internal Server Error" });
+    };
+};
 
 export const getFriends = async(req, res) =>{
     try {

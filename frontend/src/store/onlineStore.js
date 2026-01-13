@@ -1,7 +1,8 @@
 import { create } from "zustand";
 
 export const useOnlineStore = create((set) => ({
-  onlineUsers: [],
 
+  onlineUsers: [],
   setOnlineUsers: (users) => set({ onlineUsers: users }),
+  
 }));

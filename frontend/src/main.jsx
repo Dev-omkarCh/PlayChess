@@ -1,4 +1,4 @@
-import { StrictMode } from 'react';
+// import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import './index.css';
 import { DndProvider } from "react-dnd";
@@ -9,15 +9,15 @@ import { Toaster } from 'react-hot-toast';
 
 createRoot(document.getElementById('root')).render(
   // <StrictMode>
-    <>
-      <DndProvider backend={HTML5Backend}>
-        <RouterProvider router={routes} />
-      </DndProvider>
-      <Toaster 
-        position="bottom-right"
-        gutter={8}
-        containerStyle={{ top: 80, left: 20, paddingTop: 20, zIndex: 50 }}
+  <>
+    <DndProvider backend={HTML5Backend}>
+      <RouterProvider router={routes} />
+    </DndProvider>
+    <Toaster
+      position="bottom-right"
+      gutter={8}
+      containerStyle={{ top: 80, left: 20, paddingTop: 20, zIndex: 50 }}
     />
-    </>
+  </>
   // </StrictMode>
 );

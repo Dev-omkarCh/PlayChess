@@ -56,8 +56,11 @@ io.on("connection", (socket) => {
       io.to(socket.id).emit("assignColor", "white");
     } else if (gameRooms[room].length === 2) {
       io.to(socket.id).emit("assignColor", "black");
-      console.log("In room",room);
+      console.log("Both Players Joined, starting Game...");
       io.to(room).emit("startGame", { message: "Game started!" });
+    }
+    else{
+      console.log(`Only two players can join the room`);
     }
   });
 
@@ -94,9 +97,9 @@ io.on("connection", (socket) => {
   });
 
   // Handle move events
-  socket.on("movePiece", ({ room, move }) => {
-    console.log("(socket.js/movePiece) Piece moved :", move);
-    socket.to(room).emit("updateBoard", move);
+  socket.on("movePiece", ({ room, move, moveInFen, notations }) => {
+    console.log("(socket.js/movePiece) Piece moved :", move, moveInFen);
+    socket.to(room).emit("updateBoard", move, moveInFen, notations);
   });
 
   socket.on("resign", (room) => {
@@ -132,7 +135,7 @@ io.on("connection", (socket) => {
     if(room){
       socket.to(room).emit("checkmate",room);
     }
-  })
+  });
 
 
   socket.on("friend-request",({ receiverId, notification})=>{
@@ -143,6 +146,11 @@ io.on("connection", (socket) => {
   socket.on("accept-friend-request", ({ requestId, notification, sender })=>{
     const socketId = userSocketMap[requestId];
     socket.to(socketId).emit("hasAcceptRequest",{ notification: [notification], sender });
+  });
+
+  socket.on("remove-friend", (data) => {
+    const socketId = userSocketMap[data.removedUser];
+    socket.to(socketId).emit("removedByfriend", data.user);
   });
 
   socket.on("checkmate",(data)=>{

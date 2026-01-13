@@ -1,7 +1,3 @@
-import useChessStore from "../store/chessStore";
-import useAuth from "../store/useAuth";
-import useFriendStore from "../store/useFriendStore";
-
 export function calculateElo(playerRating, opponentRating, result, k = 32) {
   
     let newResult = 0;

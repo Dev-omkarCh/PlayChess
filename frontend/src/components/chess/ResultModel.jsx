@@ -5,16 +5,16 @@ import Button from '../Button';
 import { IoClose } from 'react-icons/io5';
 import useChessStore from '../../store/chessStore';
 import { useNavigate } from 'react-router-dom';
-import useAuth from '../../store/useAuth';
 import useSocketStore from '../../store/socketStore';
 import { useFriend } from '../../hooks/useFriend';
-import { useMainSocket } from '../../store/socketIoStore';
 import { useResultStore } from '../../store/resultStore';
+import useAuthStore from '@/store/authStore';
+import { useSocketContext } from '@/context/SocketContext';
 
 
 const ResultModel = () => {
 
-  const { authUser } = useAuth();
+  const { authUser } = useAuthStore();
   const { closeGameOverModal, setNotation } = useChessStore();
   const { joinGame, isGameStarted, startGameListener, gameOver, playerColor } = useSocketStore();
   const { room } = useSocketStore();
@@ -22,7 +22,7 @@ const ResultModel = () => {
   const { result, type, opponent, you } = useResultStore();
   const { saveGame } = useFriend();
   const { newRating, isRise, ratingCal } = calculateElo(you.elo,opponent.elo,result);
-  const { socket } = useMainSocket();
+  const socket = useSocketContext();
 
   const clearGameData = () =>{
     closeGameOverModal();

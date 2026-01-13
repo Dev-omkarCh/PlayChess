@@ -1,13 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useMainSocket } from '../store/socketIoStore';
 // import { useMatchmaking } from '../hooks/useMatchMaking';
 import Button from './Button';
 import { useMatchmaking } from '../hooks/useMatchMaking';
 import useSocketStore from '../store/socketStore';
-import useAuth from '../store/useAuth';
 import useSettingStore from '../store/settingStore';
 import { useFriend } from '../hooks/useFriend';
+import useAuthStore from '@/store/authStore';
 
 export default function Matchmaking() {
     const [timeLeft, setTimeLeft] = useState(300); // 5 minutes countdown
@@ -15,9 +14,9 @@ export default function Matchmaking() {
     const { startGameListener  } = useSocketStore();
     // const navigate = useNavigate();
     const { joinQueue } = useMatchmaking();
-    const { socket } = useMainSocket();
+    const socket = useSocketStore();
     const navigate = useNavigate();
-    const { authUser } = useAuth();
+    const { authUser } = useAuthStore();
     const { getSettings } = useSettingStore();
     const { getBothPlayersDetails, checkIfGameIsReloaded } = useFriend();
     

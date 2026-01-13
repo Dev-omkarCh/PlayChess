@@ -6,8 +6,9 @@ import useFriendStore from "@/store/useFriendStore";
 import { useOnlineStore } from "@/store/onlineStore";
 import useToastStore from "@/store/toastStore";
 import useChessStore from "@/store/chessStore";
-import useGameExists from "@/hooks/useGameExists";
 import { useResultStore } from "@/store/resultStore";
+import { parseFEN } from "@/utils/Fen";
+import useSocketStore from "@/store/socketStore";
 
 const SocketContext = createContext(null);
 
@@ -17,16 +18,18 @@ export const useSocketContext = () => {
 
 export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
-  const { setSocketForChessStore } = useChessStore();
+  const { setSocketForChessStore, setBoard } = useChessStore();
+  const { friends, setFriends } = useFriendStore();
   const { authUser } = useAuthStore();
 
   // const location = useLocation();
   // const inInvitePage = location.pathname === "/friends/invite";
 
-  const { setFriendRequests } = useFriendStore();
+  const { setFriendRequests, setFriend } = useFriendStore();
   const { setOnlineUsers } = useOnlineStore();
   const { showToast, setType } = useToastStore();
   const { setOpponentId } = useResultStore();
+  const { setPlayerColor, setSocketStoreSocket } = useSocketStore();
 
   useEffect(() => {
 
@@ -40,6 +43,7 @@ export const SocketProvider = ({ children }) => {
 
       setSocket(newSocket);
       setSocketForChessStore(newSocket);
+      setSocketStoreSocket(newSocket);
 
       newSocket.on("online_users", (users) => {
         setOnlineUsers(users);
@@ -50,14 +54,31 @@ export const SocketProvider = ({ children }) => {
         setFriendRequests(data, true);
       });
 
-      
-      newSocket.on("hasGameRequest",(data)=>{
+      newSocket.on("hasAcceptRequest", ({ notification, sender }) => {
+
+        if (notification && sender) {
+          setFriend(sender);
+        }
+        setFriendRequests(notification);
+      });
+
+      newSocket.on("removedByfriend", (id) => {
+        setFriends(friends?.filter((friend) => friend?._id !== id));
+      });
+
+      newSocket.on("hasGameRequest", (data) => {
         showToast(data);
         setType("GAME");
         setFriendRequests(data, true);
       });
 
-      newSocket.on("hasAccepted",({ newNotification, userId })=>{
+      newSocket.on("assignColor", (color) => {
+        console.log("Assigned color:", color);
+        localStorage.setItem("playerColor", color);
+        setPlayerColor(color);
+      });
+
+      newSocket.on("hasAccepted", ({ newNotification, userId }) => {
         setOpponentId(userId);
         setFriendRequests(newNotification);
       });

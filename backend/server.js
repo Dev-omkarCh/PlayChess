@@ -7,6 +7,8 @@ import connectDb from "./db/connectDb.js";
 import authRoutes from "./routes/auth.routes.js";
 import userRoute from "./routes/user.routes.js";
 import messageRoute from "./routes/message.routes.js";
+import notificationRoutes from "./routes/notification.routes.js";
+import friendRoutes from './routes/friend.routes.js'
 import path from "path";
 
 // app from socket
@@ -22,13 +24,15 @@ app.use(cors({
   origin : '*',
 }));
 
-app.use(express.json())>
+app.use(express.json())
 app.use(urlencoded({extended:true}));
 app.use(cookieParser());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoute);
 app.use("/api/game/messages", messageRoute);
+app.use("/api/notifications", notificationRoutes);
+app.use("/api/friends", friendRoutes);
 
 app.use(express.static(path.join(__dirname, "frontend/dist")));
 
