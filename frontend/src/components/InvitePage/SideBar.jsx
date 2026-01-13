@@ -4,9 +4,8 @@ import { useOnlineStore } from '../../store/onlineStore.js';
 
 import useFriendStore from '../../store/useFriendStore.js';
 import { useFriend } from '../../hooks/useFriend.js';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
-import useAuth from '../../store/useAuth';
 import Friends from './Friends';
 import NavigateBack from '../NavigateBack.jsx';
 import ProfileImage from '../ProfileImage.jsx';
@@ -33,6 +32,7 @@ const SideBar = ({ width, isOpen, setIsOpen }) => {
     const sortedFriends = sortFriends([...friends], onlineUsers); // Sorting the friends array by online Users
     const sidebarRef = useRef(null);
     const { getAllFriendsList } = useFriend();
+    const [color, setColor] = useState("bg-blue-500");
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -41,6 +41,7 @@ const SideBar = ({ width, isOpen, setIsOpen }) => {
             }
         };
 
+        setColor(getRandomColor());
         getAllFriendsList();
 
         document.addEventListener('mousedown', handleClickOutside);
@@ -67,10 +68,6 @@ const SideBar = ({ width, isOpen, setIsOpen }) => {
                 <p className="text-gray-400 text-sm text-center mt-2 max-w-xs">
                     It's lonely here! Why not invite someone or search for your squad?
                 </p>
-
-                <button className="mt-6 px-6 py-2 bg-indigo-600 text-white font-medium rounded-full transition-all">
-                    Add Friends
-                </button>
             </div>
         );
     };
@@ -90,15 +87,15 @@ const SideBar = ({ width, isOpen, setIsOpen }) => {
 
             {/* All Friend's List */}
             <div className={`w-full h-[82%] flex-grow flex ${sortedFriends.length > 0 ? "justify-start" : "justify-center"} items-center flex-col overflow-y-auto dark-scrollbar pt-3 gap-4`}>
-                {sortedFriends.length === 0 ? <EmptyFriends /> : 
-                sortedFriends.map((friend) => (
-                    <Friends key={friend?._id} friend={friend} />
-                ))}
+                {sortedFriends.length === 0 ? <EmptyFriends /> :
+                    sortedFriends.map((friend) => (
+                        <Friends key={friend?._id} friend={friend} />
+                    ))}
             </div>
 
             {/* Bottom Me Section */}
             <div className=" absolute bottom-0 left-0 w-full p-4 flex items-center space-x-3 bg-primary border-t border-sectionBorder">
-                <div className={`w-12 h-12 rounded-full overflow-hidden ${getRandomColor()} flex items-center justify-center`}>
+                <div className={`w-12 h-12 rounded-full overflow-hidden ${color} flex items-center justify-center`}>
                     <ProfileImage user={authUser} />
                     <span className="absolute top-4 left-4 w-3 h-3 bg-green-500 rounded-full border-2 border-gray-800"></span>
                 </div>
@@ -108,7 +105,7 @@ const SideBar = ({ width, isOpen, setIsOpen }) => {
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};
 
 export default SideBar;

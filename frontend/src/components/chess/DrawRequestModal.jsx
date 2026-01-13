@@ -1,5 +1,4 @@
 import React from "react";
-import { useMainSocket } from "../../store/socketIoStore";
 import useChessStore from "../../store/chessStore";
 import useSocketStore from "../../store/socketStore";
 import { useResultStore } from "../../store/resultStore";
@@ -9,7 +8,7 @@ import { useSocketContext } from "@/context/SocketContext";
 import clearChessData from "@/utils/clearChessData";
 
 const DrawRequestModal = () => {
-  const { drawRequest, closeDrawRequest, openGameOverModal } = useChessStore();
+  const { closeDrawRequest, openGameOverModal } = useChessStore();
   const socket = useSocketContext();
   const { room } = useSocketStore();
   const {setGameResult} = useResultStore();

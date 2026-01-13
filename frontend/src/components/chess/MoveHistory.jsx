@@ -4,15 +4,16 @@ import Button from "../Button";
 import useChessStore from "@/store/chessStore";
 import useSocketStore from "../../store/socketStore";
 
-import { useMainSocket } from "../../store/socketIoStore";
 import clearChessData from "@/utils/clearChessData";
 import { useResultStore } from "@/store/resultStore";
 import { useSocketContext } from "@/context/SocketContext";
+import { ArrowBigLeft, ArrowBigRight } from "lucide-react";
+import { parseFEN } from "@/utils/Fen";
 
 
 const MoveHistory = () => {
 
-    const { notation, openGameOverModal, resetBoard, drawRequest } = useChessStore();
+    const { notation, openGameOverModal, resetBoard, drawRequest, gameHistory, moveCount, setMoveCount, count } = useChessStore();
     const scrollRef = useRef();
     const { room } = useSocketStore();
     const socket = useSocketContext();
@@ -46,6 +47,41 @@ const MoveHistory = () => {
     const isLastMove = (index, player) =>
       index === notation[player].length - 1 && notation[player].length !== 0;
   
+    const moveBack = () => {
+
+      if(count === -1) return;
+      console.log(gameHistory);
+
+      const index = moveCount === 1 ? 0 : count - 1;
+      useChessStore.setState({ count : count - 1 });
+      
+      console.log(index);
+      const backState = gameHistory[index];
+      const fen = backState?.fen
+      console.log(fen);
+
+      const getPrevState = parseFEN(fen);
+      const board = getPrevState.board;
+      console.log(board);
+      useChessStore.setState({ board : board });
+    }
+    const moveForward = () => {
+      if(count > moveCount) return;
+      console.log(gameHistory);
+
+      const index = moveCount === 1 ? 0 : count + 1;
+      useChessStore.setState({ count : count + 1 });
+      
+      console.log(index);
+      const backState = gameHistory[index];
+      const fen = backState?.fen
+      console.log(fen);
+
+      const getPrevState = parseFEN(fen);
+      const board = getPrevState.board;
+      console.log(board);
+      useChessStore.setState({ board : board });
+    }
     return (
       <div className="bg-primary text-white p-4 rounded-lg h-[90%] min-h-[80%] w-full shadow-lg border border-sectionBorder flex-grow">
         <h2 className="text-center text-lg font-semibold mb-3 tracking-wide">
@@ -54,6 +90,10 @@ const MoveHistory = () => {
   
         <div className="max-h-[450px]" ref={scrollRef}>
           <div className=" flex justify-center items-center gap-4 mt-4 flex-col mb-3 border-t border-sectionBorder pt-5">
+            <div className="flex gap-3">
+                    <button onClick={moveBack}><ArrowBigLeft /></button>
+                    <button onClick={moveForward}><ArrowBigRight /></button>
+                </div>
               <div className='flex w-full items-center gap-3 justify-evenly'>
                 <Button handleOnClick={handleResign} text={"Resign"} color="red" />
                 <Button handleOnClick={handleDraw} text={"Draw"} color="blue" />     

@@ -1,7 +1,6 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-import useAuth from '../store/useAuth';
 import axios from 'axios';
 import useAuthStore from '@/store/authStore';
 

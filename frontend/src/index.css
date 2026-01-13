@@ -5,35 +5,44 @@
 .dark-scrollbar::-webkit-scrollbar {
   width: 10px;
 }
-.myfont{
-  font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+
+.myfont {
+  font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
 }
-.dark-scrollbar{
+
+.dark-scrollbar {
   scroll-behavior: smooth;
 }
+
 .dark-scrollbar::-webkit-scrollbar-track {
   background: #0b0f17;
   border-radius: 5px;
 }
+
 .dark-scrollbar::-webkit-scrollbar-thumb {
   background: #374151;
   border-radius: 5px;
 }
+
 .dark-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #4b5563;
 }
+
 ::-webkit-scrollbar {
   width: 10px;
   scroll-behavior: smooth;
 }
+
 ::-webkit-scrollbar-track {
   background: #0b0f17;
   border-radius: 5px;
 }
+
 ::-webkit-scrollbar-thumb {
   background: #464d60;
   border-radius: 5px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: #3d4353;
 }
@@ -49,19 +58,6 @@ tr:hover {
   background-color: #292929;
   transition: all 0.3s;
 }
-
-/* Gold, Silver, Bronze Effects */
-/* .bg-[#f5c71a] {
-  background: linear-gradient(45deg, #f5c71a, #ffdd44);
-}
-
-.bg-[#c0c0c0] {
-  background: linear-gradient(45deg, #c0c0c0, #e0e0e0);
-}
-
-.bg-[#cd7f32] {
-  background: linear-gradient(45deg, #cd7f32, #e98f57);
-} */
 
 /* Glow Effect For User */
 .animate-glow {
@@ -81,6 +77,7 @@ table {
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }

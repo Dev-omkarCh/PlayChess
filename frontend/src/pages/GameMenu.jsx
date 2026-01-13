@@ -3,55 +3,32 @@ import { FiUser, FiMenu, FiX } from "react-icons/fi";
 import { FaPlay, FaUserFriends } from "react-icons/fa";
 import { Tooltip } from "react-tooltip";
 import ChessImage from "../assets/chess.png";
-import useAuth from "../store/useAuth";
-import { Link, useNavigate } from "react-router-dom";
-import toast from "react-hot-toast";
+import { Link } from "react-router-dom";
 import useLogout from "../hooks/useLogout";
-import { MdDashboard, MdLogout } from "react-icons/md";
-import useSettingStore from "../store/settingStore";
-import SettingsModal from "../components/Settings";
-// import useSocket from "../hooks/useSocket";
+import { MdLogout } from "react-icons/md";
 import { useFriend } from './../hooks/useFriend';
 import useAdmin from "../store/useAdmin";
 import { MdSpaceDashboard } from "react-icons/md";
-import useGameExists from "@/hooks/useGameExists";
 import LogoutConfirmationDialog from "@/components/LogoutConfirmationDialog";
-import { useMainSocket } from "@/store/socketIoStore";
-import GameChatDialog from "@/components/ChatDailog";
-import { ChatPopOverMenu } from "@/ChatPopOverMenu";
-import useAuthStore from "@/store/authStore";
 import { useAppNavigator } from "@/hooks/useAppNavigator";
 
 export default function PlayMenu() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const navigate = useNavigate()
   const { logout } = useLogout();
   const { checkIfIsAdmin } = useFriend();
   const { isAdmin } = useAdmin();
-  const { checkIfGameExists } = useGameExists();
   const [open, setOpen] = useState(false);
-  const { authUser, isAuthenticated } = useAuthStore();
-  const { replaceWith } = useAppNavigator();
+  const { replaceWith, goTo } = useAppNavigator();
 
-  
-  useEffect(()=>{
+
+  useEffect(() => {
     checkIfIsAdmin();
-    checkIfGameExists();
-    console.log(authUser, isAuthenticated);
-  },[])
-
-  const handleSendToProfile = () => {
-    navigate('/profile');
-  };
-
-  const handleOpenLogoutDailog = () => {
-    setOpen(true);
-  }
+  }, []);
 
   const handleLogout = () => {
     logout();
     replaceWith("/");
-  }
+  };
 
   return (
     <div className="h-[100svh] w-[100svw] bg-primary text-white flex flex-col md:flex-row gap-10 items-center justify-center relative px-6 md:px-16 lg:px-24">
@@ -63,19 +40,27 @@ export default function PlayMenu() {
         >
           {menuOpen ? <FiX /> : <FiMenu />}
         </button>
-        <button onClick={handleSendToProfile}><FiUser className="text-3xl cursor-pointer hover:text-green-400 transition duration-300" /></button>
-        <button onClick={handleOpenLogoutDailog} className="text-3xl cursor-pointer hover:text-red-400 transition duration-300"><MdLogout /></button>
+        <button
+          onClick={() => goTo("/profile")}>
+          <FiUser className="text-3xl cursor-pointer hover:text-green-400 transition duration-300" />
+        </button>
+        <button
+          onClick={() => setOpen(true)}
+          className="text-3xl cursor-pointer hover:text-red-400 transition duration-300">
+          <MdLogout />
+        </button>
         {
-          isAdmin && 
-          <button 
-        onClick={()=> navigate("/admin")} 
-        className="text-3xl cursor-pointer hover:text-red-400 transition duration-300"
-        ><MdSpaceDashboard /></button>
+          isAdmin &&
+          <button
+            onClick={() => goTo("/admin")}
+            className="text-3xl cursor-pointer hover:text-red-400 transition duration-300">
+            <MdSpaceDashboard />
+          </button>
         }
-        
+
 
       </div>
-     
+
 
       {/* Menu List */}
       {menuOpen && (
@@ -83,7 +68,7 @@ export default function PlayMenu() {
           <ul className="space-y-3 flex flex-col">
             <Link to={"/leaderboard"} className="hover:text-green-400 cursor-pointer">Leaderboard</Link>
             <Link to={"/settings"} className="hover:text-green-400 cursor-pointer">Settings</Link>
-          
+
             {/* <button 
               className="hover:text-green-400 cursor-pointer"
               onClick={()=> openSettingsModal(true)}
@@ -108,15 +93,15 @@ export default function PlayMenu() {
           <button
             className="flex items-center justify-center gap-3 w-[90%] bg-green-500 hover:bg-green-600 active:translate-y-1 transition-all duration-300 py-3 rounded-lg text-lg font-bold shadow-[0_4px_0_#357a38] relative"
             data-tooltip-id="play-tooltip"
-            onClick={() => navigate("/matchmaking")}
+            onClick={() => goTo("/game/matchmaking")}
           >
-            <FaPlay /> Play Now 
+            <FaPlay /> Play Now
           </button>
 
           <button
             className="flex items-center justify-center gap-3 w-[90%] bg-blue-500 hover:bg-blue-600 active:translate-y-1 transition-all duration-300 py-3 rounded-lg text-lg font-bold shadow-[0_4px_0_#1d4ed8] relative"
             data-tooltip-id="invite-tooltip"
-            onClick={() => navigate("/friends/invite")}
+            onClick={() => goTo("/friends/invite")}
           >
             <FaUserFriends /> Invite Friends
           </button>

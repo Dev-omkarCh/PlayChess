@@ -7,10 +7,10 @@ import useFriendStore from "../../store/useFriendStore.js";
 import { IoClose } from "react-icons/io5";
 import { FiCheck } from "react-icons/fi";
 import { IoMdClose } from "react-icons/io";
-import { useFriend } from "../../hooks/useFriend.js";
 import { useOnlineStore } from "../../store/onlineStore.js";
 import toast from "react-hot-toast";
 import { useResponsiveStore } from "../../store/responsiveStore.js";
+import useRequest from "@/hooks/useRequest.js";
 
 const InboxModal = ({ isOpen, onClose ,sortByRequest }) => {
 
@@ -27,7 +27,7 @@ const InboxModal = ({ isOpen, onClose ,sortByRequest }) => {
   // changes
   const [messages, setMessages] = useState([]);
   const { friendRequests, setFriendRequests } = useFriendStore();
-  const { initSocketListeners, acceptFriendRequest, declineFriendRequest, acceptGameRequest, declineGameRequest } = useFriend();
+  const { initSocketListeners, acceptFriendRequest, declineFriendRequest, acceptGameRequest, declineGameRequest } = useRequest();
   const {onlineUsers} = useOnlineStore();
   const { width, setWidth } = useResponsiveStore();
   const { WIDTH } = useResponsiveStore();

@@ -3,9 +3,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Send } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import notificationSound from "@/sounds/notification.mp3"
-import { useMainSocket } from "@/store/socketIoStore";
 import { FaMessage } from "react-icons/fa6";
 import { messageStore } from "@/store/messageStore";
 import { useMessage } from "@/hooks/useMessage";
@@ -16,12 +15,11 @@ import MessagesContainer from "./MessagesContainer";
 
 
 export default function GameChatDialog() {
-  const { messages, setMessages } = messageStore();
+  const { messages } = messageStore();
   const [input, setInput] = useState("");
   const messagesEndRef = useRef(null);
   const { room, messageListener } = useSocketStore();
   const { getMessages, sendMessage } = useMessage();
-  const { socket } = useMainSocket();
 
   const playSendSound = () => {
     const audio = new Audio(notificationSound);

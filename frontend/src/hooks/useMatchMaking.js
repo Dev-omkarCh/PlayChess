@@ -1,15 +1,11 @@
 import { useEffect } from 'react';
-import { useMainSocket } from '../store/socketIoStore';
-import { useNavigate } from 'react-router-dom';
 import useSocketStore from './useRoom';
 import { useResultStore } from '../store/resultStore';
-import { useFriend } from './useFriend';
 import { useSocketContext } from '@/context/SocketContext';
 
 export const useMatchmaking = () => {
     const socket = useSocketContext();
-    const navigate = useNavigate();
-    const { setMatchMaked, setOpponentId } = useResultStore();
+    const { setOpponentId } = useResultStore();
     const { setRoom, setPlayerColor, playerColor } = useSocketStore();
 
     const joinQueue = () => {

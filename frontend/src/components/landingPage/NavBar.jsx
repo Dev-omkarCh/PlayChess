@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { FaChessKnight } from 'react-icons/fa';
 import { Avatar } from "../../components/ui/avatar";
 import { FaBars } from 'react-icons/fa';
-import useAuth from '../../store/useAuth';
 import { IoPersonCircleSharp } from "react-icons/io5";
 import { Link, useNavigate } from 'react-router-dom';
 import { getRandomColor } from '../../utils/randomColorGenerator';

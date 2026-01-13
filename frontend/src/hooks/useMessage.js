@@ -1,9 +1,10 @@
+import { useSocketContext } from "@/context/SocketContext";
 import { messageStore } from "@/store/messageStore";
-import { useMainSocket } from "@/store/socketIoStore";
 import toast from "react-hot-toast";
 
 export const useMessage = () => {
     const { messages,setMessages } = messageStore();
+    const socket = useSocketContext();
 
     const getMessages = async(roomId) =>{
         try {
@@ -35,7 +36,7 @@ export const useMessage = () => {
             if (!response.ok) throw new Error("Failed to send message");
             const data = await response.json();
             setMessages(data,true);
-            useMainSocket.getState().socket.emit("hasSendMessage", roomId, data);
+            socket?.emit("hasSendMessage", roomId, data);
             return data;
         } catch (error) {
             toast.error(error.message);

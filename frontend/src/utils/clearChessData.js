@@ -7,6 +7,7 @@ function clearChessData(){
     localStorage.removeItem("isGameActive");
     localStorage.removeItem("board");
     localStorage.removeItem("turn");
+    localStorage.removeItem("gameHistory");
 };
 
 export default clearChessData;

@@ -1,37 +1,35 @@
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { useState } from "react";
-import { useMainSocket } from "./store/socketIoStore";
 import notificationSound from "@/sounds/notification.mp3";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, MessageCircle } from "lucide-react";
+import { Send } from "lucide-react";
 
 const quickEmojis = ["😀", "😂", "🔥", "❤️", "👏"];
 
-export function ChatPopOverMenu() {
+const ChatPopOverMenu = () => {
 
   const [messages, setMessages] = useState([]);
-    const [input, setInput] = useState("");
-  
-    const { socket } = useMainSocket();
-  
-    const playSendSound = () => {
-      const audio = new Audio(notificationSound);
-      audio.play();
-    };
-  
-    const sendMessage = (content, type = "text") => {
-      if (!content.trim()) return;
-      setMessages([...messages, { content, type, sender: "You" }]);
-      setInput("");
-      playSendSound();
-    };
+  const [input, setInput] = useState("");
+
+  const socket = useSocketContext();
+
+  const playSendSound = () => {
+    const audio = new Audio(notificationSound);
+    audio.play();
+  };
+
+  const sendMessage = (content, type = "text") => {
+    if (!content.trim()) return;
+    setMessages([...messages, { content, type, sender: "You" }]);
+    setInput("");
+    playSendSound();
+  };
 
   return (
     <Popover>
@@ -56,11 +54,10 @@ export function ChatPopOverMenu() {
               >
                 <motion.div
                   whileHover={{ scale: 1.02 }}
-                  className={`px-4 py-2 rounded-2xl shadow-lg max-w-[70%] text-sm transition-all duration-200 ${
-                    msg.sender === "You"
-                      ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white"
-                      : "bg-gray-800 text-gray-200"
-                  }`}
+                  className={`px-4 py-2 rounded-2xl shadow-lg max-w-[70%] text-sm transition-all duration-200 ${msg.sender === "You"
+                    ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white"
+                    : "bg-gray-800 text-gray-200"
+                    }`}
                 >
                   {msg.content}
                 </motion.div>
@@ -108,4 +105,6 @@ export function ChatPopOverMenu() {
       </PopoverContent>
     </Popover>
   )
-}
+};
+
+export default ChatPopOverMenu;

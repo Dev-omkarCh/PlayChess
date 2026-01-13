@@ -1,11 +1,18 @@
+const ProfileImage = ({ user }) => {
 
-const ProfileImage = ({ user, invalidateImage }) => {
-
-    const profileImageVal = invalidateImage ? null : user?.profileImg;
-    if (!profileImageVal) {
-      return <span className="text-white font-bold text-lg capitalize ">{user?.username?.charAt(0)?.toUpperCase()}</span>
-    }
-    return <img src={profileImageVal} className="w-full h-full object-cover" />
+  if (!user?.profileImg) {
+    return (
+      <span className="text-white font-bold text-lg capitalize ">
+        {user?.username?.charAt(0)?.toUpperCase()}
+      </span>
+    );
   };
+  return (
+    <img
+      src={user?.profileImg}
+      className="w-full h-full object-cover"
+    />
+  );
+};
 
 export default ProfileImage;
