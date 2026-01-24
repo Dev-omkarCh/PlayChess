@@ -1,24 +1,66 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Shield, Zap, Swords, User, CheckCircle, XCircle, Palette, Lock, Check } from 'lucide-react';
 import SettingsModal from '@/components/Settings';
 import ExitConfirmModal from '@/components/lobby/ExitConfirmModal';
+import useAuthStore from '@/store/authStore';
+import { useResultStore } from '@/store/resultStore';
+import { useOnlineStore } from '@/store/onlineStore';
+import { useSocketContext } from '@/context/SocketContext';
+import { useGameDataStore } from '@/store/gameDataStore';
+import { useFriend } from '@/hooks/useFriend';
 
 const GameLobby = () => {
 
-    const [isReady, setIsReady] = useState(false);
+    const { onlineUsers } = useOnlineStore();
+    const { authUser } = useAuthStore();
+    const { opponent, setOpponent, opponentId } = useResultStore();
+
+    const [isReady, setIsReady] = useState(true);
+
+    console.log(opponentId);
+    const opponentReady = onlineUsers?.includes(opponentId);
     const [isOpen, setIsOpen] = useState(false);
     const [mode, setMode] = useState("casual");
+
     const [showExitConfirm, setShowExitConfirm] = useState(false);
 
-    const isHost = true;
-    const opponentName = "Grandmaster_Pro";
-    const userAvatar = "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix";
-    const opponentAvatar = "https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka";
+    const { gameData, setGameData } = useGameDataStore();
 
-    const opponentReady = true;
+    const isHost = gameData?.isHost === true;
+    const opponentName = "Grandmaster_Pro";
+    const userAvatar = authUser?.profileImg;
+    const opponentAvatar = opponent?.profileImg;
+    const socket = useSocketContext();
+    const { getBothPlayersDetail } = useFriend();
+
+    useEffect(()=>{
+        console.log(onlineUsers);
+        if(localStorage.getItem("gameDataNew")){
+            const data = JSON.parse(localStorage.getItem("gameDataNew"));
+            setGameData(data);
+
+            console.log(data?.black);
+            if(data?.isHost === true){
+                getBothPlayersDetail(data?.black);
+            }
+            else{
+                getBothPlayersDetail(data?.white);
+            }
+        }
+        else{
+            getBothPlayersDetail(opponentId);
+        }
+    },[]);
 
     const handleActualExit = () => {
+        
+    };
 
+    const handleStartGame  = () => {
+        if(isReady){
+            socket?.emit("readyStatus", { status : false, opponentId : opponent?._id});
+        }
+        setIsReady(!isReady);
     };
 
     return (
@@ -125,7 +167,7 @@ const GameLobby = () => {
                     {/* MAIN ACTIONS */}
                     <div className="flex flex-col sm:flex-row gap-3 pt-2">
                         <button
-                            onClick={() => setIsReady(!isReady)}
+                            onClick={handleStartGame}
                             className={`flex-[2] py-4 rounded-xl font-black text-lg uppercase tracking-wider transition-all shadow-xl ${isReady
                                     ? 'bg-[#312e2b] text-gray-500'
                                     : 'bg-[#81b64c] hover:bg-[#95bb4a] text-white active:scale-[0.98]'

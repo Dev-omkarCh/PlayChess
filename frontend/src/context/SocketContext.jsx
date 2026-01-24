@@ -9,6 +9,8 @@ import useChessStore from "@/store/chessStore";
 import { useResultStore } from "@/store/resultStore";
 import { parseFEN } from "@/utils/Fen";
 import useSocketStore from "@/store/socketStore";
+import { useGameDataStore } from "@/store/gameDataStore";
+import { useAppNavigator } from "@/hooks/useAppNavigator";
 
 const SocketContext = createContext(null);
 
@@ -30,6 +32,8 @@ export const SocketProvider = ({ children }) => {
   const { showToast, setType } = useToastStore();
   const { setOpponentId } = useResultStore();
   const { setPlayerColor, setSocketStoreSocket } = useSocketStore();
+  const { setGameData } = useGameDataStore();
+  const { goTo } = useAppNavigator();
 
   useEffect(() => {
 
@@ -66,10 +70,16 @@ export const SocketProvider = ({ children }) => {
         setFriends(friends?.filter((friend) => friend?._id !== id));
       });
 
-      newSocket.on("hasGameRequest", (data) => {
-        showToast(data);
+      newSocket.on("statusChange", (status) => {
+        setFriends(friends?.filter((friend) => friend?._id !== id));
+      });
+
+      newSocket.on("hasGameRequest", ({ notification, gameData  }) => {
         setType("GAME");
-        setFriendRequests(data, true);
+        showToast(notification);
+        setGameData(gameData);
+        localStorage.setItem("gameDataNew", JSON.stringify(gameData));
+        setFriendRequests(notification, true);
       });
 
       newSocket.on("assignColor", (color) => {
@@ -81,6 +91,7 @@ export const SocketProvider = ({ children }) => {
       newSocket.on("hasAccepted", ({ newNotification, userId }) => {
         setOpponentId(userId);
         setFriendRequests(newNotification);
+        goTo("/game/lobby");
       });
 
       // Clean up when user logs out or component unmounts

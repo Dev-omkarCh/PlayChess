@@ -38,7 +38,7 @@ export default function FriendsSidebar() {
     };
 
     socket.on("startGame", handleStartGame);
-    createNewGame();
+    // createNewGame();
     return () => socket?.off("startGame");
     
   }, [socket, replaceWith]);
