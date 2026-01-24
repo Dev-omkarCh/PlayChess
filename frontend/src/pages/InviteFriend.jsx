@@ -11,6 +11,7 @@ import { useResponsiveStore } from "../store/responsiveStore";
 import { useAppNavigator } from "@/hooks/useAppNavigator";
 import { useSocketContext } from "@/context/SocketContext";
 import useRequest from "@/hooks/useRequest";
+import useGame from "@/hooks/useGame";
 
 
 export default function FriendsSidebar() {
@@ -23,6 +24,7 @@ export default function FriendsSidebar() {
   const [isOpen, setIsOpen] = useState(true);
   const socket = useSocketContext();
   const { replaceWith } = useAppNavigator();
+  const { createNewGame } = useGame();
 
   useEffect(() => {
     if (!socket) return;
@@ -36,6 +38,7 @@ export default function FriendsSidebar() {
     };
 
     socket.on("startGame", handleStartGame);
+    createNewGame();
     return () => socket?.off("startGame");
     
   }, [socket, replaceWith]);

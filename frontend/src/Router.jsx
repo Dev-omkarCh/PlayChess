@@ -20,6 +20,7 @@ import PrivateRoute from './components/PrivateRoute';
 import ChessConnect from './pages/AddFriend';
 import Matchmaking from './components/MatchMaking';
 import MultiplayerGame1 from './pages/MultiplayerGame1';
+import ChessLobby from './pages/ChessLobby';
 
 const routes = createBrowserRouter([
     {
@@ -48,7 +49,7 @@ const routes = createBrowserRouter([
             },
             { path: "*", element: <NotFound /> },
             { path: "/test", element: <ChessConnect /> },
-            { path: "/test1", element: <MultiplayerGame1 /> }
+            { path: "/test1", element: <ChessLobby /> }
         ],
     }
 ]);

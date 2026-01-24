@@ -35,7 +35,7 @@ export const SocketProvider = ({ children }) => {
 
     // Only connect if we actually have a Logged user
     if (authUser) {
-      const newSocket = io("http://localhost:4000", {
+      const newSocket = io("http://localhost:4001", {
         query: {
           userId: authUser._id,
         },
