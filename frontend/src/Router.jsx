@@ -44,12 +44,13 @@ const routes = createBrowserRouter([
                     { path: "/game/multiplayer", element: < MultiplayerGame1 /> },
                     { path: "/profile", element: <ProfilePage /> },
                     { path: "/friends/invite", element: <InviteFriend /> },
-                    { path: "/game/matchmaking", element: <Matchmaking />}
+                    { path: "/game/matchmaking", element: <Matchmaking />},
+                    { path: "/game/lobby", element: <ChessLobby />}
+                    
                 ]
             },
             { path: "*", element: <NotFound /> },
             { path: "/test", element: <ChessConnect /> },
-            { path: "/test1", element: <ChessLobby /> }
         ],
     }
 ]);

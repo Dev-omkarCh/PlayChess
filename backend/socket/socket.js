@@ -157,9 +157,17 @@ io.on("connection", (socket) => {
     socket.to(room).emit("updateBoard", data)
   })
 
-  socket.on("game-request",({ id, notification})=>{
+  socket.on("game-request",({ id, notification, userId, gameId})=>{
     const socketId = userSocketMap[id];
-    socket.to(socketId).emit("hasGameRequest",notification);
+
+    const gameData = {
+      isHost : userId,
+      white: userId,
+      black: id,
+      gameId
+    }
+
+    socket.to(socketId).emit("hasGameRequest",{ notification, gameData });
   });
 
   socket.on("accept-game-request",({ id, notification, userId})=>{
@@ -167,6 +175,12 @@ io.on("connection", (socket) => {
     const socketId = userSocketMap[id];
     socket.to(socketId).emit("hasAccepted",{ newNotification, userId });
   });
+
+  socket.on("readyStatus", ({ status, opponentId })=> {
+    console.log(status, opponentId);
+    const id = userSocketMap[opponentId]
+    socket.to(id).emit("statusChange", false);
+  })
 
   // Handle disconnection
   socket.on("disconnect", () => {

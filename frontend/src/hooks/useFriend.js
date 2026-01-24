@@ -15,7 +15,7 @@ export const useFriend = () => {
     const { friendRequests, setFriendRequests, setGameRequests, friends, setFriends, setGameId, setUser, setHistory, setUsers, setFriend, setGameStatus } = useFriendStore();
     const { isGameStarted, startGameListener } = useSocketStore();
     const { joinGame } = useRoom();
-    const { authUser } = useAuthStore();
+    const { authUser, setAuthUser } = useAuthStore();
     const { opponentId, setOpponentId, you, setYou, opponent, setOpponent, result, type, matchMaked } = useResultStore();
     const { notation } = useChessStore();
     const { setIsAdmin } = useAdmin();
@@ -385,6 +385,19 @@ export const useFriend = () => {
         }
     };
 
+    const getBothPlayersDetail = async (id) => {
+        try {
+            const response = await axios.get(`/api/game/players/${id}`);
+            const data = response.data;
+            
+            setAuthUser(data?.game?.you);
+            setOpponent(data?.game?.opponent);
+
+        } catch (error) {
+            console.log("Error in getBothPlayersDetail : ",error);
+        }
+    };
+
     return {
         friendRequestListener,
         getFriendRequests,
@@ -405,6 +418,7 @@ export const useFriend = () => {
         markMessageAsRead,
         checkIfGameIsReloaded,
         checkIfIsAdmin,
-        removeFriend
+        removeFriend,
+        getBothPlayersDetail,
     }
 }
