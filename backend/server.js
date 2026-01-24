@@ -9,6 +9,7 @@ import userRoute from "./routes/user.routes.js";
 import messageRoute from "./routes/message.routes.js";
 import notificationRoutes from "./routes/notification.routes.js";
 import friendRoutes from './routes/friend.routes.js'
+import gameRoutes from './routes/game.routes.js'
 import path from "path";
 
 // app from socket
@@ -33,6 +34,7 @@ app.use("/api/users", userRoute);
 app.use("/api/game/messages", messageRoute);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/friends", friendRoutes);
+app.use("/api/game", gameRoutes);
 
 app.use(express.static(path.join(__dirname, "frontend/dist")));
 

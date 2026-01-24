@@ -4,8 +4,11 @@ import {
   Palette, EyeOff, ShieldAlert, Maximize2 
 } from 'lucide-react';
 
-const ChessSettings = ({ settings, setSettings }) => {
+const ChessSettings = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [settings, setSettings] = useState({
+    boardColor: "green"
+  })
 
   // Helper to toggle settings
   const toggle = (key) => setSettings(prev => ({ ...prev, [key]: !prev[key] }));
