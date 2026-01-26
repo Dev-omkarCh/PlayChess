@@ -6,6 +6,7 @@ import useFriendStore from "../../store/useFriendStore";
 import { BiSidebar } from "react-icons/bi";
 import { useResponsiveStore } from "../../store/responsiveStore";
 import { useOnlineStore } from "../../store/onlineStore";
+import { notificationStore } from "@/store/notificationStore";
 
 
 export default function TopMenu({ width, setIsOpen }) {
@@ -17,9 +18,12 @@ export default function TopMenu({ width, setIsOpen }) {
   const { onlineUsers } = useOnlineStore();
   const activePlayer = onlineUsers?.length || 0;
 
-  const { friendRequests } = useFriendStore();
-  const notifications = friendRequests.filter((request) =>
-    request.type === "friend-request" || request.type === "game-request"
+  const { notifications } = notificationStore();
+
+  console.log(notifications);
+
+  const notificationsFiltered = notifications.filter((request) =>
+    request?.type === "send" || request?.status === "pending"
   );
 
   useEffect(() => {
@@ -91,10 +95,10 @@ export default function TopMenu({ width, setIsOpen }) {
             className="p-3 rounded-full bg-secondaryVaraint hover:bg-[#454545] transition-all duration-300 border border-sectionBorder"
           >
             <FaBell className="text-white text-[1.1rem]" />
-            {notifications.length > 0 &&
+            {notificationsFiltered?.length > 0 &&
               <span
                 className="absolute top-0 left-[60%] bg-red-500 w-4 h-4 text-white font-bold rounded-full text-[10px] flex justify-center items-center">
-                {notifications.length}
+                {notificationsFiltered?.length}
               </span>
             }
           </button>
@@ -103,7 +107,7 @@ export default function TopMenu({ width, setIsOpen }) {
         <NotificationModal
           onClose={() => setIsOpenNotification(false)}
           isOpen={isOpenNotification}
-          notifications={notifications}
+          notifications={notificationsFiltered}
         />
 
       </div>

@@ -4,9 +4,6 @@ import path from "path";
 import dotenv from "dotenv";
 dotenv.config();
 
-const PORT = 4001;
-console.log(PORT);
-
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
@@ -19,7 +16,7 @@ export default defineConfig({
     port : 3000,
     proxy : {
       "/api" : {
-        target : `http://localhost:${PORT}`,
+        target : `http://localhost:8000`,
       },
     }
   },

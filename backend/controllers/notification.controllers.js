@@ -1,40 +1,28 @@
+import Challenge from "../models/challenge.model.js";
+import FriendRequest from "../models/friendRequest.model.js";
 import Notifications from "../models/notification.model.js";
 import User from "../models/user.model.js";
 
 export const getFriendAndGameRequests = async (req, res) => {
     try {
-        const userId = req?.user?._id;
-        const typesQuery = req.query.types; // e.g., "friend,game" or "friend"
+        const userId = req.user._id;
 
-        if (!userId) return res.status(401).json({ message: "Unauthorized Access" });
-        if (!typesQuery) return res.status(400).json({ message: "Provide a Notification Type" });
-
-        // Map the short names from frontend to your DB type strings
-        const typeMapping = {
-            friend: "friend-request",
-            game: "game-request"
-        };
-
-        // Convert query string into an array and filter for valid ones
-        const requestedTypes = typesQuery.split(",").map(t => t.trim());
-        const validDbTypes = requestedTypes
-            .filter(t => typeMapping[t])     // Only keep 'friend' or 'game'
-            .map(t => typeMapping[t]);      // Convert to 'friend-request', etc.
-
-        if (validDbTypes.length === 0) {
-            return res.status(400).json({ message: "Invalid Notification Type(s) provided" });
-        }
-
-        // 3. One single query handles everything!
-        const requests = await Notifications.find({
+        const friendRequests = await FriendRequest.find({
             to: userId,
-            isRead: false,
-            type: { $in: validDbTypes } // This handles 1 type OR multiple types automatically
+            type: "send",
+            isRead: false
         })
             .populate("from", "username profileImg")
             .sort({ createdAt: -1 });
 
-        return res.status(200).json(requests);
+        const challengeRequests = await Challenge.find({
+            guestId: userId,
+            status: "pending",
+            isRead: false
+        })
+            .sort({ createdAt: -1 });
+
+        return res.status(200).json({ friendRequests, challengeRequests });
 
     } catch (error) {
         console.error("Error in getNotifications:", error.message);
@@ -286,11 +274,11 @@ export const declineGameRequest = async (req, res) => {
         const user = await User.findById(userId);
 
         if (user.friends.includes(id)) {
-            const validRequest = await Notifications.findOne({ 
-                from: id, 
-                to: userId, 
-                type: "game-request", 
-                isRead: false 
+            const validRequest = await Notifications.findOne({
+                from: id,
+                to: userId,
+                type: "game-request",
+                isRead: false
             });
 
             if (!validRequest) {

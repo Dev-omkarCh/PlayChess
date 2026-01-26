@@ -6,6 +6,7 @@ import useFriendStore from "../../store/useFriendStore";
 import toast from "react-hot-toast";
 import { useFriend } from "../../hooks/useFriend";
 import { useResponsiveStore } from "../../store/responsiveStore";
+import { notificationStore } from "@/store/notificationStore";
 
 const InboxModal = ({ isOpen, onClose, messages, setMessages }) => {
 
@@ -104,7 +105,8 @@ const Inbox = () => {
 
   // changes
   const { friendRequests, setFriendRequests } = useFriendStore();
-  const sortByRequest = friendRequests.filter((request) => request.type !== "friend-request" && request.type !== "game-request" );
+  const { notifications, setNotifications } = notificationStore();
+  const sortByRequest = notifications.filter((request) => request.type !== "send" && request.status !== "pending" );
 
   return (
     <>

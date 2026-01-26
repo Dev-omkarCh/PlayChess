@@ -8,7 +8,7 @@ import {
 
 const router = express.Router();
 
-router.get("/", protectedRoute, getFriendAndGameRequests);
+router.get("/requests", protectedRoute, getFriendAndGameRequests);
 
 router.post("/send/friend-request/:id", protectedRoute, sendFriendRequest);
 router.post("/send/accept-request/:id", protectedRoute, acceptFriendRequest);

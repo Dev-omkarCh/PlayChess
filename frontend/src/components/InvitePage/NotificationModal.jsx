@@ -48,7 +48,7 @@ const NotificationModal = ({ isOpen, onClose, notifications }) => {
 
         {/* Notification messages */}
         <div className="space-y-2 max-h-60 w-fit overflow-y-auto dark-scrollbar pr-2 dark-scrollbar">
-          {notifications.length === 0 ?
+          {notifications?.length === 0 ?
             <p className="text-gray-400">No Notification</p> :
             (
               notifications.map((message) => (

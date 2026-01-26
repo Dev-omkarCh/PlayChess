@@ -9,6 +9,7 @@ const RequestToast = ({ data, onClose, duration = 10000, type }) => {
     const { goTo } = useAppNavigator();
     const { acceptFriendRequest } = useRequest();
     const { friendRequests, setFriendRequests } = useFriendStore();
+    const sender = type === "FRIEND" ? data?.from : data?.host;
 
     useEffect(() => {
         const timer = setTimeout(onClose, duration);
@@ -49,10 +50,10 @@ const RequestToast = ({ data, onClose, duration = 10000, type }) => {
                         {/* Discord Avatar Style */}
                         <div className="relative flex-shrink-0">
                             <div className="h-12 w-12 rounded-full bg-[#5865f2] flex items-center justify-center text-white text-lg font-semibold overflow-hidden">
-                                {data?.profileImg ? (
-                                    <img src={data?.profileImg} alt="User" className="h-full w-full object-cover" />
+                                {sender?.profileImg ? (
+                                    <img src={sender?.profileImg} alt="User" className="h-full w-full object-cover" />
                                 ) : (
-                                    data?.senderName?.charAt(0).toUpperCase()
+                                    sender?.username?.charAt(0).toUpperCase()
                                 )}
                             </div>
                             <div className="absolute bottom-0 right-0 h-3.5 w-3.5 bg-[#23a55a] rounded-full border-[3px] border-[#313338]"></div>
@@ -61,7 +62,7 @@ const RequestToast = ({ data, onClose, duration = 10000, type }) => {
                         <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-1">
                                 <span className="text-white font-bold text-[15px] truncate cursor-pointer hover:underline">
-                                    {data?.senderName || "UnknownUser"}
+                                    {sender?.username || "UnknownUser"}
                                 </span>
                             </div>
                             <p className="text-[13px] text-[#b5bac1] mt-0.5">

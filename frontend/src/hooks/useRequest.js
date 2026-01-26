@@ -7,6 +7,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { useGameDataStore } from "@/store/gameDataStore";
 import { useAppNavigator } from "./useAppNavigator";
+import { notificationStore } from "@/store/notificationStore";
 
 const useRequest = () => {
 
@@ -17,12 +18,16 @@ const useRequest = () => {
     const { setOpponentId } = useResultStore();
     const { setGameData } = useGameDataStore();
     const { goTo } = useAppNavigator();
+    const { setNotifications } = notificationStore();
 
     const getFriendAndGameRequests = async () => {
         try {
-            const response = await axios.get("/api/notifications?types=friend,game");
+            const response = await axios.get("/api/notifications/requests");
             const data = response.data;
-            setFriendRequests(data);
+
+            console.log(data);
+
+            setNotifications([...data.friendRequests, ...data.challengeRequests]);
             console.log("Successfully get friend and game requests");
             return;
         } catch (error) {
@@ -32,14 +37,14 @@ const useRequest = () => {
 
     const sendFriendRequest = async (receiverId) => {
         try {
-            const response = await axios.post(`/api/notifications/send/friend-request/${receiverId}`);
+            const response = await axios.post(`/api/friends/request/${receiverId}`); 
             const data = response.data;
             if (!data.notification) {
                 toast.error(data.message);
                 return;
             }
             toast.success(data.message);
-            socket.emit("friend-request", { receiverId, notification: data.notification });
+            socket.emit("send-friend-request", { receiverId, notification: data.notification });
             return;
 
         } catch (error) {
@@ -77,8 +82,15 @@ const useRequest = () => {
                 isHost: true,
                 gameId: data?.notification.gameId,
             });
+            
+            // Send Challenge to Backend to create a game instance
 
-            toast.success(data?.message);
+            const response1 = await axios.post(`/api/game/challenge/${receiverId}`);
+            const data1 = response1.data;
+            console.log("Challenge Data : ", data1?.challenge);
+            socket.emit("challenge-player", { notification: data1?.challenge });
+
+            toast.success(data1?.message);
 
             return data;
 
@@ -133,26 +145,24 @@ const useRequest = () => {
         }
     };
 
-    const declineFriendRequest = async (requestId) => {
+    const declineFriendRequest = async (receiverId) => {
 
         try {
-            const response = await fetch(`/api/notifications/send/deny-request/${requestId}`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-            });
-            const data = await response.json();
-            if (!response.ok) return toast.error(data?.message);
+            const response = await axios.post(`/api/friends/decline/${receiverId}`);
+            const data = response.data;
 
-            // optional
-            console.log(`Friend Request Declined of ${data?.from}`);
-            toast.success(`Friend Request Declined of ${data?.from}`);
+            toast.success(data?.message);
+            socket.emit("decline-friend-request", { receiverId, notification: data.notification });
 
         } catch (error) {
-            toast.error(error.message);
+            console.error(error.response?.data?.message || "Something went wrong");
+            return;
         }
     };
 
     const declineGameRequest = async (requestId) => {
+
+        console.log(requestId);
 
         try {
             const response = await fetch(`/api/notifications/game/decline/${requestId}`, {
