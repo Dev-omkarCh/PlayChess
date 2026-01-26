@@ -7,6 +7,7 @@ import { IoMdClose } from "react-icons/io";
 import toast from "react-hot-toast";
 import { useOnlineStore } from "@/store/onlineStore.js";
 import useRequest from "@/hooks/useRequest.js";
+import { notificationStore } from "@/store/notificationStore.js";
 
 const NotificationCard = ({ notification }) => {
 
@@ -16,18 +17,21 @@ const NotificationCard = ({ notification }) => {
         acceptFriendRequest, declineFriendRequest,
         acceptGameRequest, declineGameRequest
     } = useRequest();
+    const { notifications, setNotifications } = notificationStore();
 
     const handleAccept = (request) => {
 
+        // request.from OR request.hostId
+
         // TODO: Fix this db conflicts
-        const fromId = request.from._id ? request.from._id : request.from;
+        const fromId = request?.from?._id ? request.from._id : request.hostId;
 
         if (!fromId) return toast.error("Can't Accept Request, Something went wrong!");
         const isOnline = onlineUsers.includes(fromId);
 
         // Handle friend request acceptance
         // no need to have user(from) to be online to accept friend request
-        if (request?.type === "friend-request") {
+        if (request?.type === "send") {
 
             acceptFriendRequest(fromId);
             setFriendRequests(friendRequests.filter((req) => req._id !== notification._id));
@@ -52,19 +56,22 @@ const NotificationCard = ({ notification }) => {
     const handleDecline = (request) => {
 
         // TODO: DB Conflicts
-        const fromId = request.from._id ? request.from._id : request.from;
+        const fromId = request.from._id ? request.from._id : request.hostId;
 
-        if (request.type === "game-request") {
-            declineGameRequest(fromId);
+        if (request?.type === "send") {
+            declineFriendRequest(fromId);
         }
         else {
-            declineFriendRequest(fromId);
+            declineGameRequest(fromId);
         };
-
-        setFriendRequests(
-            friendRequests?.filter((req) => req._id !== notification._id)
-        );
+        
+        const filteredNotifications = notifications?.filter((req) => req._id !== request._id);
+        setNotifications(filteredNotifications);
     };
+
+    const message = notification?.type === "send" ? 
+    `${notification?.from?.username} wants to be friends` : 
+    `${notification?.host?.username} has challenged you to a game`;
 
     return (
         <div
@@ -73,7 +80,7 @@ const NotificationCard = ({ notification }) => {
                 ${notification?.isRead ? "border-transparent bg-gray-700" : "border-blue-500 bg-gray-700"}`}
         >
             {/* Message Content & buttons */}
-            <p className="text-gray-300 capitalize">{notification?.message}</p>
+            <p className="text-gray-300 capitalize">{message}</p>
             <div className="flex gap-2">
 
                 {/* Accept Request Button */}

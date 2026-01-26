@@ -11,6 +11,8 @@ import { parseFEN } from "@/utils/Fen";
 import useSocketStore from "@/store/socketStore";
 import { useGameDataStore } from "@/store/gameDataStore";
 import { useAppNavigator } from "@/hooks/useAppNavigator";
+import { notificationStore } from "@/store/notificationStore";
+import toast from "react-hot-toast";
 
 const SocketContext = createContext(null);
 
@@ -34,12 +36,13 @@ export const SocketProvider = ({ children }) => {
   const { setPlayerColor, setSocketStoreSocket } = useSocketStore();
   const { setGameData } = useGameDataStore();
   const { goTo } = useAppNavigator();
+  const { setNotification } = notificationStore();
 
   useEffect(() => {
 
     // Only connect if we actually have a Logged user
     if (authUser) {
-      const newSocket = io("http://localhost:4001", {
+      const newSocket = io("http://localhost:8000", {
         query: {
           userId: authUser._id,
         },
@@ -53,9 +56,14 @@ export const SocketProvider = ({ children }) => {
         setOnlineUsers(users);
       });
 
-      newSocket.on("hasfriendRequest", (data) => {
+      newSocket.on("new-friend-request", (data) => {
+        setType("FRIEND");
         showToast(data);
-        setFriendRequests(data, true);
+        setNotification(data);
+      });
+
+      newSocket.on("decline-request", (data) => {
+        setNotification(data);
       });
 
       newSocket.on("hasAcceptRequest", ({ notification, sender }) => {
@@ -92,6 +100,18 @@ export const SocketProvider = ({ children }) => {
         setOpponentId(userId);
         setFriendRequests(newNotification);
         goTo("/game/lobby");
+      });
+
+      newSocket.on("has-new-challenge", ({ notification }) => {
+        console.log("Has new Challenge");
+        showToast({
+          profileImg : notification.host.profileImg,
+          senderName : notification.host.username,
+          type : "challenge",
+        })
+        console.log(notification);
+        toast.success("You have a new challenge!");
+        setNotification(notification);
       });
 
       // Clean up when user logs out or component unmounts

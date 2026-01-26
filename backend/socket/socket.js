@@ -138,9 +138,18 @@ io.on("connection", (socket) => {
   });
 
 
-  socket.on("friend-request",({ receiverId, notification})=>{
+  socket.on("send-friend-request",({ notification })=>{
+
+    const receiverId = notification.receiver.id;
     const socketId = userSocketMap[receiverId];
-    socket.to(socketId).emit("hasfriendRequest",notification);
+    socket.to(socketId).emit("new-friend-request", notification );
+  });
+
+  socket.on("decline-friend-request",({ notification })=>{
+
+    const receiverId = notification.receiver.id;
+    const socketId = userSocketMap[receiverId];
+    socket.to(socketId).emit("decline-request", notification );
   })
 
   socket.on("accept-friend-request", ({ requestId, notification, sender })=>{
@@ -168,6 +177,15 @@ io.on("connection", (socket) => {
     }
 
     socket.to(socketId).emit("hasGameRequest",{ notification, gameData });
+  });
+
+  socket.on("challenge-player",({ notification })=>{
+    console.log("challenge-player socket.io", notification);
+    const receiverId = notification.guestId;
+
+    const socketId = userSocketMap[receiverId];
+    console.log("socketId : ", socketId);
+    socket.to(socketId).emit("has-new-challenge",{ notification });
   });
 
   socket.on("accept-game-request",({ id, notification, userId})=>{

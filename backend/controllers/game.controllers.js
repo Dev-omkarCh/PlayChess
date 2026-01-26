@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import ChessGame from "../models/chessGame.model.js";
 import User from "../models/user.model.js";
+import Challenge from "../models/challenge.model.js";
 
 export const createNewGame = async (req, res) => {
     // Implementation for creating a new game
@@ -70,4 +71,65 @@ export const checkGameExists = (req, res) => {
 
 export const playedMove = (req, res) => {
     // Implementation for making a move in the game
-}
+};
+
+export const challengePlayer = async (req, res) => {
+    try {
+        const { id: opponentId } = req.params;
+        const userId = req?.user?._id;
+
+        if (!userId) {
+            return res.status(400).json({ message: "UnAuthorized" });
+        };
+        if (!opponentId) {
+            return res.status(400).json({ message: "OpponentId is required" });
+        };
+
+        if (userId.toString() === opponentId.toString()) {
+            return res.status(400).json({ message: "You cannot challenge yourself" });
+        };
+
+        const user = await User.findById(userId).select("-password");
+
+        if (!user) {
+            return res.status(400).json({ message: "AuthUser Not found" });
+        }
+
+        const opponent = await User.findById(opponentId).select("-password");
+
+        if (!opponent) {
+            return res.status(400).json({ message: "Opponent Not found" });
+        }
+
+        const existingChallenge = await Challenge.findOne({
+            hostId: userId,
+            guestId: opponentId,
+            status: "pending"
+        });
+
+        // if (existingChallenge) {
+        //     return res.status(400).json({ message: "Challenge already sent to this player" });
+        // };
+
+        const challenge = await Challenge.create({
+            hostId: userId,
+            guestId: opponentId,
+            host: {
+                id: user._id,
+                username: user.username,
+                profileImg: user.profileImg,
+            },
+            guest: {
+                id: opponent._id,
+                username: opponent.username,
+                profileImg: opponent.profileImg,
+            }
+        });
+
+        return res.status(201).json({ message: "Challenge sent successfully", challenge });
+
+    } catch (error) {
+        console.log("Error in challengePlayer Controller : ", error?.message);
+        return res.status(500).json({ message: "Internal Server Error" });
+    }
+};
