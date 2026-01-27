@@ -11,6 +11,7 @@ import { useOnlineStore } from "../../store/onlineStore.js";
 import toast from "react-hot-toast";
 import { useResponsiveStore } from "../../store/responsiveStore.js";
 import useRequest from "@/hooks/useRequest.js";
+import { notificationStore } from "@/store/notificationStore.js";
 
 const InboxModal = ({ isOpen, onClose ,sortByRequest }) => {
 
@@ -31,6 +32,7 @@ const InboxModal = ({ isOpen, onClose ,sortByRequest }) => {
   const {onlineUsers} = useOnlineStore();
   const { width, setWidth } = useResponsiveStore();
   const { WIDTH } = useResponsiveStore();
+  const { setNotifications } = notificationStore();
   
   useEffect(() => {
     initSocketListeners();
@@ -43,7 +45,8 @@ const InboxModal = ({ isOpen, onClose ,sortByRequest }) => {
     
     if(request.type === "friend-request"){
       acceptFriendRequest(id);
-      setFriendRequests(sortByRequest.filter((req) => req._id !== request._id))
+      setNotifications(sortByRequest.filter((req) => req._id !== request._id));
+      onClose();
     }
     
     if(isOnline){

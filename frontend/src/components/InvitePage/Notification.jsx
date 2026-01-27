@@ -9,7 +9,7 @@ import { useOnlineStore } from "@/store/onlineStore.js";
 import useRequest from "@/hooks/useRequest.js";
 import { notificationStore } from "@/store/notificationStore.js";
 
-const NotificationCard = ({ notification }) => {
+const NotificationCard = ({ notification, onClose }) => {
 
     const { friendRequests, setFriendRequests } = useFriendStore();
     const { onlineUsers } = useOnlineStore();
@@ -34,8 +34,9 @@ const NotificationCard = ({ notification }) => {
         if (request?.type === "send") {
 
             acceptFriendRequest(fromId);
-            setFriendRequests(friendRequests.filter((req) => req._id !== notification._id));
+            setNotifications(friendRequests.filter((req) => req._id !== notification._id));
             console.log(`Friend request accepted from ${fromId}`);
+            onClose();
             return;
         };
 

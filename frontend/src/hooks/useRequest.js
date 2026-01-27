@@ -18,7 +18,7 @@ const useRequest = () => {
     const { setOpponentId } = useResultStore();
     const { setGameData } = useGameDataStore();
     const { goTo } = useAppNavigator();
-    const { setNotifications } = notificationStore();
+    const { notifications, setNotifications } = notificationStore();
 
     const getFriendAndGameRequests = async () => {
         try {
@@ -37,7 +37,7 @@ const useRequest = () => {
 
     const sendFriendRequest = async (receiverId) => {
         try {
-            const response = await axios.post(`/api/friends/request/${receiverId}`); 
+            const response = await axios.post(`/api/friends/request/${receiverId}`);
             const data = response.data;
             if (!data.notification) {
                 toast.error(data.message);
@@ -49,6 +49,7 @@ const useRequest = () => {
 
         } catch (error) {
             console.error(error.response?.data?.message || "Something went wrong");
+            toast.error(error.response?.data?.message || "Something went wrong");
             return;
         }
     };
@@ -82,7 +83,7 @@ const useRequest = () => {
                 isHost: true,
                 gameId: data?.notification.gameId,
             });
-            
+
             // Send Challenge to Backend to create a game instance
 
             const response1 = await axios.post(`/api/game/challenge/${receiverId}`);
@@ -104,11 +105,15 @@ const useRequest = () => {
     const acceptFriendRequest = async (requestId) => {
 
         try {
-            const response = await axios.post(`/api/notifications/send/accept-request/${requestId}`);
+            const response = await axios.post(`/api/friends/accept/${requestId}`);
             const data = response.data;
 
-            setFriend(data?.sender);
-            socket?.emit("accept-friend-request", { requestId, notification: data?.notification, sender: data?.user });
+            setFriend(data?.notification?.reciever);
+            socket?.emit("accept-friend-request", { 
+                requestId, 
+                notification: data?.notification, 
+                sender: data?.notification?.sender 
+            });
             toast.success(data?.message);
 
         } catch (error) {
@@ -135,13 +140,10 @@ const useRequest = () => {
             });
 
             goTo("/game/lobby");
-            
-            return;
 
         } catch (error) {
             console.error(error.response?.data?.message || "Something went wrong");
             toast.error(error.response?.data?.message || "Something went wrong");
-            return;
         }
     };
 
@@ -177,7 +179,7 @@ const useRequest = () => {
             toast.success(`Game Request Declined of ${data?.from}`);
 
         } catch (error) {
-            toast.error(error.message);
+            console.error(error.response?.data?.message || "Something went wrong");
         };
     };
 
@@ -192,10 +194,61 @@ const useRequest = () => {
         });
     };
 
+    const markAsRead = async (id) => {
+        try {
+
+            const response = await axios.delete(`/api/notifications/markAsRead/${id}`);
+            const data = response.data;
+
+            const filteredNotifications = notifications.filter((notification) => notification._id !== id);
+            setNotifications(filteredNotifications);
+            toast.success(data?.message);
+
+        } catch (error) {
+            console.error(error.response?.data?.message || "Something went wrong");
+        }
+    };
+
+    const markAllMessagesAsRead = async (messages) => {
+        try {
+            const response = await axios.delete("/api/notifications/markAsRead");
+            const data = response.data;
+
+            const filteredNotifications = notifications.filter((notification) => {
+                return !messages.some((message) => message._id === notification._id);
+            });
+
+            setNotifications(filteredNotifications);
+            toast.success(data?.message);
+
+        } catch (error) {
+            console.error(error.response?.data?.message || "Something went wrong");
+        }
+    };
+
+    const removeFriend = async (id) => {
+        try {
+            const response = await axios.delete(`/api/friends/remove/${id}`);
+            const data = response.data;
+            toast.success(data?.message);
+            const filteredfriends = friends.filter((friend)=> friend._id !== id );
+            setFriends(filteredfriends);
+            socket?.emit("remove-friend", { removedUser: id, user : authUser._id });
+            return;
+
+        } catch (error) {
+            console.log(error);
+            console.error(error.response?.data?.message || "Something went wrong");
+            toast.error(error.response?.data?.message || "Something went wrong");
+            return;
+        }
+    };
+
     return {
         sendFriendRequest, acceptFriendRequest, declineFriendRequest,
         sendGameRequest, acceptGameRequest, declineGameRequest,
-        friendRequestListener, getFriendAndGameRequests
+        friendRequestListener, getFriendAndGameRequests, markAllMessagesAsRead, markAsRead,
+        removeFriend
     };
 };
 
