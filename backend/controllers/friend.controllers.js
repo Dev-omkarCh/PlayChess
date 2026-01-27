@@ -36,9 +36,16 @@ export const removeFriend = async (req, res) => {
             return res.status(404).json({ message: "One or both users not found" });
         }
 
+        const notification = await FriendRequest.create({
+            from: userId,
+            to: friendId,
+            type: "remove",
+        });
+
         return res.status(200).json({
             message: "Friend removed successfully",
-            updatedUser // Optional: send back the new friends list
+            updatedUser, // Optional: send back the new friends list
+            notification
         });
 
     } catch (error) {
@@ -72,13 +79,14 @@ export const sendFriendRequest = async (req, res) => {
         }
 
         // Check if a friend request has already been sent
-        const existingFriendRequest = await FriendRequest.findOne({
-            from: senderId,
-            to: receiverId,
-            type: "send"
+        const alreadyFriends = await User.findOne({
+            _id: senderId,
+            friends: {
+                $in: [receiverId]
+            }
         });
 
-        if (existingFriendRequest) {
+        if (alreadyFriends) {
             return res.status(400).json({ message: "Friend request already sent." });
         }
 

@@ -12,7 +12,7 @@ const friendRequestSchema = new mongoose.Schema({
     },
     type: { 
         type: String,
-        enum: ["send", "accept", "decline"],
+        enum: ["send", "accept", "decline", "remove"],
         required: true
     },
     isRead: {

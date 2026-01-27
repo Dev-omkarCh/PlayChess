@@ -45,11 +45,13 @@ const InboxModal = ({ isOpen, onClose, messages, setMessages }) => {
     if(msg?.type){
       if(msg.type === "accept") return `${sender.username} is your friend now`;
       else if(msg.type === "decline") return `${sender.username} don't want to be friends`;
+      else if(msg.type === "remove") return `${sender.username} removed you from friends`;
     }
     else if(msg?.status){
       if(msg.status === "accept") return `${sender.username} accpeted your challenge`;
       else if(msg.status === "decline") return `${sender.username} accpeted your challenge`;
     }
+    return `${sender.username} message type not configured yet`;
   };
 
   if (!isOpen) return null;
