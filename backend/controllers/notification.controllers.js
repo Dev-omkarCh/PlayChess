@@ -1,15 +1,19 @@
+import mongoose from "mongoose";
 import Challenge from "../models/challenge.model.js";
 import FriendRequest from "../models/friendRequest.model.js";
 import Notifications from "../models/notification.model.js";
 import User from "../models/user.model.js";
 
-export const getFriendAndGameRequests = async (req, res) => {
+export const getAllNotifications = async (req, res) => {
     try {
         const userId = req.user._id;
 
+        if (!userId) {
+            return res.status(400).json({ message: "UnAuthorized" });
+        }
+
         const friendRequests = await FriendRequest.find({
             to: userId,
-            type: "send",
             isRead: false
         })
             .populate("from", "username profileImg")
@@ -17,15 +21,16 @@ export const getFriendAndGameRequests = async (req, res) => {
 
         const challengeRequests = await Challenge.find({
             guestId: userId,
-            status: "pending",
             isRead: false
         })
             .sort({ createdAt: -1 });
 
+        console.log({ friendRequests, challengeRequests })
+
         return res.status(200).json({ friendRequests, challengeRequests });
 
     } catch (error) {
-        console.error("Error in getNotifications:", error.message);
+        console.error("Error in getAllNotifications:", error.message);
         res.status(500).json({ message: "Internal Server Error" });
     }
 };
@@ -313,6 +318,68 @@ export const declineGameRequest = async (req, res) => {
             return res.status(400).json({ message: "Invalid User ID" });
         }
         console.log("Error in declineGameRequest Controller", e.message);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+};
+
+export const markAllMessagesAsRead = async (req, res) => {
+    try {
+        const userId = req.user._id;
+
+        if (!userId) return res.status(400).json({ message: "UnAuthorized" });
+
+        await FriendRequest.deleteMany({
+            to: userId,
+            type: { $in: ["accept", "decline"] },
+        });
+
+        await Challenge.updateMany({
+            guestId: userId,
+            type: { $in: ["accepted", "declined"] },
+            isRead: false,
+        },
+            {
+                $set: { isRead: true }
+            });
+
+        return res.status(200).json({ message: "Mark All Message as Read" });
+    }
+    catch (e) {
+        console.log("Error in markAllMessagesAsRead Controller", e.message);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+};
+
+export const markMessageAsRead = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const notificationId = req.params?.id;
+        
+        const parsedId = new mongoose.Types.ObjectId(notificationId);
+
+        if(!notificationId){
+            return res.status(400).json({ message : "Notification Id is Missing" });
+        }
+
+        const friendRequest = await FriendRequest.deleteMany({
+            _id: parsedId,
+        });
+
+        const challenge = await Challenge.updateMany({
+            _id: parsedId
+        },
+            {
+                $set: {
+                    isRead : true,
+                }
+            })
+
+        console.log(friendRequest, challenge);
+
+        return res.status(200).json({ message: "Mark Notification as Read" });
+    }
+    catch (e) {
+        console.log("Error in markAllMessagesAsRead Controller", e.message);
         res.status(500).json({ message: "Internal Server Error" });
     }
 };

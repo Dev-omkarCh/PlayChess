@@ -1,6 +1,7 @@
 import { useAppNavigator } from '@/hooks/useAppNavigator';
 import { useFriend } from '@/hooks/useFriend';
 import useRequest from '@/hooks/useRequest';
+import { notificationStore } from '@/store/notificationStore';
 import useFriendStore from '@/store/useFriendStore';
 import React, { useEffect } from 'react';
 
@@ -10,6 +11,8 @@ const RequestToast = ({ data, onClose, duration = 10000, type }) => {
     const { acceptFriendRequest } = useRequest();
     const { friendRequests, setFriendRequests } = useFriendStore();
     const sender = type === "FRIEND" ? data?.from : data?.host;
+    const senderId = data?.status === "pending" ? data.hostId : data?.from?._id;
+    const { notifications, setNotifications } = notificationStore();
 
     useEffect(() => {
         const timer = setTimeout(onClose, duration);
@@ -26,8 +29,9 @@ const RequestToast = ({ data, onClose, duration = 10000, type }) => {
     };
 
     const onAccept = () => {
-        acceptFriendRequest(data?.from || '');
-        setFriendRequests(friendRequests.filter((req) => req._id !== data._id));
+        acceptFriendRequest(senderId || '');
+        const filteredFriendRequest = notifications?.filter((req) => req._id !== data._id);
+        setNotifications(filteredFriendRequest);
         onClose();
     };
 

@@ -55,6 +55,7 @@ const NotificationModal = ({ isOpen, onClose, notifications }) => {
                 <NotificationCard
                   notification={message}
                   key={message._id}
+                  onClose={onClose}
                 />
               ))
             )}
